@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offer Radar — Intelligence Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="is-booting">
+  <canvas id="constellation-canvas" class="constellation-canvas" aria-hidden="true"></canvas>
+  <div class="page-shell dashboard-shell">
+    <div class="ambient ambient-left"></div>
+    <div class="ambient ambient-right"></div>
+    <div class="ambient ambient-center"></div>
+
+    <header class="topbar topbar-command motion-assemble reveal-ready" data-assemble data-assemble-group="top" data-reveal data-depth="4">
+      <div class="topbar-copy">
+        <p class="eyebrow">Local offer intelligence</p>
+        <h1>Offer Radar</h1>
+        <p class="subcopy">Organize mecanismos, promessas, micropersonas e sinais de escala sem depender de planilhas soltas.</p>
+        <div class="hero-signature-row" aria-label="Assinatura visual do produto">
+          <span class="signature-chip signature-chip-accent">Purple intelligence stack</span>
+          <span class="signature-chip">Radar local</span>
+          <span class="signature-chip">Meta + biblioteca</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span id="connection-status" class="status-pill">Carregando...</span>
+        <button class="ghost-btn" id="btn-refresh">Atualizar base</button>
+        <button class="primary-btn" id="btn-new-offer">+ Nova oferta</button>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+      <section class="hero-grid primary-hero-grid motion-assemble reveal-ready" data-assemble data-assemble-group="center-float" data-reveal data-depth="3">
+        <article class="hero-panel hero-panel-main radar-hero-panel motion-parallax" data-depth="6">
+          <div class="hero-copy">
+            <p class="section-kicker">Radar do momento</p>
+            <h2>Leia o mercado como quem monta dossiês, não como quem coleciona anúncios.</h2>
+            <p>
+              Cadastre ofertas manualmente, anexe URLs públicas e ranqueie tudo por sinais de escala: repetição,
+              clareza, especificidade do mecanismo, força do funil e aderência de micropersona.
+            </p>
+          </div>
+          <div class="hero-metrics" id="hero-metrics">
+            <div class="hero-metric-card">
+              <span>Total mapeado</span>
+              <strong id="hero-total-offers">0</strong>
+            </div>
+            <div class="hero-metric-card accent-card">
+              <span>Score médio</span>
+              <strong id="hero-average-score">0</strong>
+            </div>
+            <div class="hero-metric-card">
+              <span>Topo do radar</span>
+              <strong id="hero-top-platform">-</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="hero-panel signal-panel radar-side-panel motion-parallax" data-depth="9">
+          <div class="section-head compact">
+            <div>
+              <p class="section-kicker">Leitura rápida</p>
+              <h3>Distribuição de score</h3>
+            </div>
+          </div>
+          <div id="score-bands" class="score-bands"></div>
+        </article>
+      </section>
+
+      <section class="summary-grid executive-summary-grid motion-assemble reveal-ready" id="summary-grid" data-assemble data-assemble-group="bottom" data-reveal data-depth="2">
+        <article class="summary-card motion-parallax" data-depth="5">
+          <span class="summary-label">Ofertas</span>
+          <strong class="summary-value" id="total-offers">0</strong>
+          <small class="summary-note">Dossiês ativos no dashboard</small>
+        </article>
+        <article class="summary-card motion-parallax" data-depth="8">
+          <span class="summary-label">Score médio</span>
+          <strong class="summary-value" id="average-score">0</strong>
+          <small class="summary-note">Qualidade média dos sinais</small>
+        </article>
+        <article class="summary-card motion-parallax" data-depth="6">
+          <span class="summary-label">Melhor score</span>
+          <strong class="summary-value" id="highest-score">0</strong>
+          <small class="summary-note">Oferta mais promissora hoje</small>
+        </article>
+        <article class="summary-card motion-parallax" data-depth="4">
+          <span class="summary-label">Ticket médio</span>
+          <strong class="summary-value" id="average-entry-price">R$ 0,00</strong>
+          <small class="summary-note">Faixa média de entrada</small>
+        </article>
+      </section>
+
+      <section class="meta-radar-shell module-shell module-shell-meta motion-assemble reveal-ready" data-assemble data-assemble-group="left" data-reveal data-depth="4">
+        <article class="hero-panel hero-panel-main meta-module-head module-hero-panel motion-parallax" data-depth="7">
+          <div class="hero-copy">
+            <p class="section-kicker">Meta Ads Radar</p>
+            <h2>Mapeie os anúncios mais fortes agora por sinais públicos de escala.</h2>
+            <p>
+              Cole links da Meta Ad Library, registre criativos, promessas, marcas e sinais observáveis. O ranking abaixo
+              é local e semi-automático: ele prioriza recorrência, recência, clareza e estrutura da oferta.
+            </p>
+            <p class="meta-disclaimer">Não é um ranking oficial da Meta. É um radar prático de escala com base em sinais públicos.</p>
+          </div>
+          <div class="hero-metrics">
+            <div class="hero-metric-card glass-card">
+              <span>Anúncios vivos</span>
+              <strong id="meta-hero-total-ads">0</strong>
+            </div>
+            <div class="hero-metric-card accent-card meta-accent-card">
+              <span>Meta score médio</span>
+              <strong id="meta-hero-average-score">0</strong>
+            </div>
+            <div class="hero-metric-card glass-card">
+              <span>Marca em destaque</span>
+              <strong id="meta-hero-top-brand">-</strong>
+            </div>
+          </div>
+        </article>
+
+        <section class="summary-grid reveal-ready" id="meta-summary-grid" data-reveal data-depth="2">
+          <article class="summary-card meta-summary-card">
+            <span class="summary-label">Ads mapeados</span>
+            <strong class="summary-value" id="meta-total-ads">0</strong>
+            <small class="summary-note">Anúncios observados na Ad Library</small>
+          </article>
+          <article class="summary-card meta-summary-card">
+            <span class="summary-label">Meta score</span>
+            <strong class="summary-value" id="meta-average-score">0</strong>
+            <small class="summary-note">Força média dos sinais públicos</small>
+          </article>
+          <article class="summary-card meta-summary-card">
+            <span class="summary-label">Top score</span>
+            <strong class="summary-value" id="meta-highest-score">0</strong>
+            <small class="summary-note">Anúncio com leitura mais forte hoje</small>
+          </article>
+          <article class="summary-card meta-summary-card">
+            <span class="summary-label">Criativos médios</span>
+            <strong class="summary-value" id="meta-average-creative-count">0</strong>
+            <small class="summary-note">Volume médio por anúncio observado</small>
+          </article>
+        </section>
+
+        <section class="meta-command-deck">
+          <article class="meta-command-bar reveal-ready motion-parallax" data-reveal data-depth="5">
+            <div>
+              <p class="section-kicker">Command center</p>
+              <h3>Operações do Meta Radar</h3>
+              <p class="muted-text">Use o cadastro unitário para leitura fina e a importação em lote para abastecer o radar com rapidez.</p>
+            </div>
+            <div class="meta-command-actions">
+              <button class="ghost-btn" id="btn-open-meta-import">Importar em lote</button>
+              <button class="primary-btn" id="btn-new-meta-ad">+ Novo anúncio Meta</button>
+            </div>
+          </article>
+          <article class="meta-intelligence-strip reveal-ready motion-parallax" data-reveal data-depth="7">
+            <div class="intel-chip">
+              <span class="intel-label">Leitura</span>
+              <strong>Ranking por sinais públicos</strong>
+            </div>
+            <div class="intel-chip">
+              <span class="intel-label">Fluxo</span>
+              <strong>Cadastro fino + lote JSON</strong>
+            </div>
+            <div class="intel-chip intel-chip-accent">
+              <span class="intel-label">Modo</span>
+              <strong>Semiautomático e local</strong>
+            </div>
+          </article>
+        </section>
+
+        <section class="filters-panel meta-filters-panel meta-elevated-panel reveal-ready motion-parallax" data-reveal data-depth="6">
+          <div class="section-head compact">
+            <div>
+              <p class="section-kicker">Filtragem Meta</p>
+              <h3>Refine o radar Meta Ads</h3>
+            </div>
+          </div>
+          <div class="filters-grid meta-filters-grid">
+            <label class="field-wrap meta-search-field">
+              <span>Busca</span>
+              <input id="meta-filter-search" type="text" placeholder="Título, marca, hook, promessa...">
+            </label>
+            <label class="field-wrap">
+              <span>Nicho</span>
+              <select id="meta-filter-niche"><option value="">Todos</option></select>
+            </label>
+            <label class="field-wrap">
+              <span>Marca</span>
+              <select id="meta-filter-brand"><option value="">Todas</option></select>
+            </label>
+            <label class="field-wrap">
+              <span>Criativo</span>
+              <select id="meta-filter-creative-type"><option value="">Todos</option></select>
+            </label>
+            <label class="field-wrap">
+              <span>Tag</span>
+              <select id="meta-filter-tag"><option value="">Todas</option></select>
+            </label>
+            <label class="field-wrap">
+              <span>Meta score mínimo</span>
+              <input id="meta-filter-min-score" type="number" min="0" max="100" step="1" placeholder="0">
+            </label>
+          </div>
+          <div class="meta-filter-footnote">Para lote, cole um JSON array com vários anúncios Meta. O radar ignora duplicatas por URL da Ad Library.</div>
+        </section>
+
+        <section class="content-grid reveal-ready" data-reveal data-depth="3">
+          <section class="offers-panel meta-table-panel meta-elevated-panel motion-parallax" data-depth="8">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">Maior sinal de escala agora</p>
+                <h3>Meta Ads Radar</h3>
+              </div>
+              <div class="offers-head-actions meta-table-meta">
+                <span class="muted-text" id="meta-ads-counter">0 anúncios</span>
+              </div>
+            </div>
+            <div class="table-shell meta-table-shell">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Anúncio</th>
+                    <th>Marca</th>
+                    <th>Mecanismo</th>
+                    <th>Criativo</th>
+                    <th>Dias</th>
+                    <th>Meta score</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="meta-ads-body">
+                  <tr><td colspan="7" class="empty-row">Carregando anúncios Meta...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <aside class="insights-panel meta-insights-panel meta-elevated-panel motion-parallax" data-depth="10">
+            <div class="section-head compact">
+              <div>
+                <p class="section-kicker">Leitura do módulo</p>
+                <h3>O que mais está aparecendo</h3>
+              </div>
+            </div>
+
+            <div class="ranking-block">
+              <h4>Distribuição de Meta score</h4>
+              <div id="meta-score-bands" class="score-bands"></div>
+            </div>
+
+            <div class="ranking-block">
+              <h4>Marcas dominantes</h4>
+              <div id="meta-ranking-brands" class="ranking-list"></div>
+            </div>
+
+            <div class="ranking-block">
+              <h4>Nichos</h4>
+              <div id="meta-ranking-niches" class="ranking-list"></div>
+            </div>
+
+            <div class="ranking-block">
+              <h4>Tipos de criativo</h4>
+              <div id="meta-ranking-creative-types" class="ranking-list"></div>
+            </div>
+
+            <div class="ranking-block">
+              <h4>Tags quentes</h4>
+              <div id="meta-ranking-tags" class="tag-cloud"></div>
+            </div>
+          </aside>
+        </section>
+
+        <section class="content-grid meta-bottom-grid reveal-ready" data-reveal data-depth="4">
+          <section class="offers-panel meta-import-promo meta-elevated-panel">
+            <div class="section-head compact">
+              <div>
+                <p class="section-kicker">Importação em lote</p>
+                <h3>Abasteça o radar com JSON colado</h3>
+              </div>
+              <button class="ghost-btn" id="btn-open-meta-import-inline">Abrir importador</button>
+            </div>
+            <p class="muted-text">Formato recomendado para acelerar o mapeamento sem sacrificar a precisão. Ideal para colar vários anúncios e depois refinar os melhores manualmente.</p>
+            <div class="meta-json-preview">
+              <pre>[
+  {
+    "adTitle": "...",
+    "brandName": "...",
+    "niche": "...",
+    "promise": "...",
+    "adLibraryUrl": "https://..."
+  }
+]</pre>
+            </div>
+          </section>
+          <section class="offers-panel meta-import-feedback meta-elevated-panel">
+            <div class="section-head compact">
+              <div>
+                <p class="section-kicker">Resumo operacional</p>
+                <h3>Resultado da última importação</h3>
+              </div>
+            </div>
+            <div class="meta-import-stats" id="meta-import-stats">
+              <div class="meta-stat-box"><span>Importados</span><strong id="meta-imported-count">0</strong></div>
+              <div class="meta-stat-box"><span>Ignorados</span><strong id="meta-skipped-count">0</strong></div>
+              <div class="meta-stat-box"><span>Erros</span><strong id="meta-error-count">0</strong></div>
+            </div>
+            <div class="meta-import-log muted-text" id="meta-import-log">Nenhuma importação em lote executada nesta sessão.</div>
+          </section>
+        </section>
+      </section>
+
+      <section class="scaled-offers-shell module-shell module-shell-library motion-assemble reveal-ready" data-assemble data-assemble-group="right" data-reveal data-depth="5">
+        <article class="hero-panel hero-panel-main scaled-module-head module-hero-panel motion-parallax" data-depth="7">
+          <div class="hero-copy">
+            <p class="section-kicker">Biblioteca Meta</p>
+            <h2>Veja uma biblioteca própria de anúncios Meta, independente do cadastro manual do topo.</h2>
+            <p>
+              Este módulo lê uma base própria da biblioteca, com importação separada e carregamento automático.
+              O radar/cadastro manual do topo não alimenta esta área.
+            </p>
+          </div>
+          <div class="hero-metrics">
+            <div class="hero-metric-card glass-card">
+              <span>Status do conector</span>
+              <strong id="scaled-offers-status-text">Aguardando</strong>
+            </div>
+            <div class="hero-metric-card accent-card meta-accent-card">
+              <span>Anúncios disponíveis</span>
+              <strong id="scaled-offers-counter-hero">0</strong>
+            </div>
+            <div class="hero-metric-card glass-card">
+              <span>Biblioteca</span>
+              <strong id="scaled-offers-query-label">Biblioteca Meta</strong>
+            </div>
+          </div>
+        </article>
+
+        <section class="offers-panel scaled-search-panel reveal-ready motion-parallax" data-reveal data-depth="6">
+          <div class="section-head compact">
+            <div>
+              <p class="section-kicker">Atualização da biblioteca</p>
+              <h3>Operações da biblioteca</h3>
+            </div>
+            <div class="meta-command-actions">
+              <button class="ghost-btn" id="btn-open-scaled-import" type="button">Importar biblioteca</button>
+              <button class="ghost-btn" id="btn-run-scaled-collector" type="button">Rodar coleta</button>
+              <button class="primary-btn" id="btn-refresh-scaled-offers" type="button">Atualizar biblioteca</button>
+            </div>
+          </div>
+          <div class="offer-subline scaled-search-meta">
+            <span id="scaled-offers-status" class="status-pill">Carregando biblioteca</span>
+            <span id="scaled-offers-counter" class="muted-text">0 anúncios</span>
+          </div>
+          <p class="helper-text" id="scaled-offers-message">Carregando a biblioteca independente de anúncios Meta.</p>
+        </section>
+
+        <section class="offers-panel scaled-results-panel reveal-ready motion-parallax" data-reveal data-depth="8">
+          <div class="section-head">
+            <div>
+              <p class="section-kicker">Biblioteca independente</p>
+              <h3>Biblioteca do momento</h3>
+            </div>
+          </div>
+          <div id="scaled-offers-results" class="scaled-results-grid">
+            <div class="scaled-empty-state">Carregando biblioteca...</div>
+          </div>
+        </section>
+      </section>
+
+      <section class="content-grid meta-bottom-grid">
+        <section class="offers-panel meta-import-promo meta-elevated-panel">
+          <div class="section-head compact">
+            <div>
+              <p class="section-kicker">Importação própria</p>
+              <h3>Abasteça a biblioteca inferior</h3>
+            </div>
+            <button class="ghost-btn" id="btn-open-scaled-import-inline">Abrir importador</button>
+          </div>
+          <p class="muted-text">Use este importador para popular a biblioteca de baixo sem depender do radar/cadastro manual do topo.</p>
+          <div class="meta-json-preview">
+            <pre id="scaled-import-preview">[
+  {
+    "offerTitle": "...",
+    "brandName": "...",
+    "libraryUrl": "https://...",
+    "creativeUrl": "https://...",
+    "adsCount": 200
+  }
+]</pre>
+          </div>
+        </section>
+        <section class="offers-panel meta-import-feedback meta-elevated-panel">
+          <div class="section-head compact">
+            <div>
+              <p class="section-kicker">Resumo operacional</p>
+              <h3>Resultado da última importação</h3>
+            </div>
+          </div>
+          <div class="meta-import-stats" id="scaled-import-stats">
+            <div class="meta-stat-box"><span>Importados</span><strong id="scaled-imported-count">0</strong></div>
+            <div class="meta-stat-box"><span>Ignorados</span><strong id="scaled-skipped-count">0</strong></div>
+            <div class="meta-stat-box"><span>Erros</span><strong id="scaled-error-count">0</strong></div>
+          </div>
+          <div class="meta-import-log muted-text" id="scaled-import-log">Nenhuma importação executada nesta sessão.</div>
+        </section>
+      </section>
+
+      <section class="filters-panel reveal-ready motion-parallax" data-reveal data-depth="5">
+        <div class="section-head compact">
+          <div>
+            <p class="section-kicker">Filtragem</p>
+            <h3>Refine o radar</h3>
+          </div>
+        </div>
+        <div class="filters-grid">
+          <label class="field-wrap">
+            <span>Busca</span>
+            <input id="filter-search" type="text" placeholder="Nome, promessa, mecanismo...">
+          </label>
+          <label class="field-wrap">
+            <span>Nicho</span>
+            <select id="filter-niche"><option value="">Todos</option></select>
+          </label>
+          <label class="field-wrap">
+            <span>Plataforma</span>
+            <select id="filter-platform"><option value="">Todas</option></select>
+          </label>
+          <label class="field-wrap">
+            <span>Micropersona</span>
+            <select id="filter-micropersona"><option value="">Todas</option></select>
+          </label>
+          <label class="field-wrap">
+            <span>Tag</span>
+            <select id="filter-tag"><option value="">Todas</option></select>
+          </label>
+          <label class="field-wrap">
+            <span>Score mínimo</span>
+            <input id="filter-min-score" type="number" min="0" max="100" step="1" placeholder="0">
+          </label>
+        </div>
+      </section>
+
+      <section class="content-grid reveal-ready" data-reveal data-depth="4">
+        <section class="offers-panel motion-parallax" data-depth="8">
+          <div class="section-head">
+            <div>
+              <p class="section-kicker">Banco de ofertas</p>
+              <h3>Ofertas classificadas</h3>
+            </div>
+            <div class="offers-head-actions">
+              <span class="muted-text" id="offers-counter">0 ofertas</span>
+            </div>
+          </div>
+          <div class="table-shell">
+            <table>
+              <thead>
+                <tr>
+                  <th>Oferta</th>
+                  <th>Mecanismo</th>
+                  <th>Avatar</th>
+                  <th>Origem</th>
+                  <th>Ticket</th>
+                  <th>Score</th>
+                  <th></th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="offers-body">
+                <tr><td colspan="7" class="empty-row">Carregando ofertas...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="insights-panel motion-parallax" data-depth="10">
+          <div class="section-head compact">
+            <div>
+              <p class="section-kicker">Tendências</p>
+              <h3>O que mais aparece</h3>
+            </div>
+          </div>
+
+          <div class="ranking-block">
+            <h4>Mecanismos dominantes</h4>
+            <div id="ranking-mechanisms" class="ranking-list"></div>
+          </div>
+
+          <div class="ranking-block">
+            <h4>Micropersonas</h4>
+            <div id="ranking-micropersonas" class="ranking-list"></div>
+          </div>
+
+          <div class="ranking-block">
+            <h4>Plataformas</h4>
+            <div id="ranking-platforms" class="ranking-list"></div>
+          </div>
+
+          <div class="ranking-block">
+            <h4>Tags quentes</h4>
+            <div id="ranking-tags" class="tag-cloud"></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <section class="drawer" id="offer-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div>
+        <p class="section-kicker">Dossiê completo</p>
+        <h3 id="detail-name">Oferta</h3>
+      </div>
+      <button class="icon-btn" id="detail-close" aria-label="Fechar detalhe">×</button>
+    </div>
+    <div class="drawer-content" id="detail-content"></div>
+  </section>
+
+  <div class="drawer-backdrop" id="meta-drawer-backdrop"></div>
+  <section class="drawer meta-drawer" id="meta-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div>
+        <p class="section-kicker">Meta Ads Radar</p>
+        <h3 id="meta-detail-name">Anúncio</h3>
+      </div>
+      <button class="icon-btn" id="meta-detail-close" aria-label="Fechar detalhe Meta">×</button>
+    </div>
+    <div class="drawer-content" id="meta-detail-content"></div>
+  </section>
+
+  <div class="modal" id="offer-modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <p class="section-kicker">Cadastro</p>
+          <h3 id="modal-title">Nova oferta</h3>
+        </div>
+        <button class="icon-btn" id="modal-close" aria-label="Fechar formulário">×</button>
+      </div>
+
+      <form id="offer-form" class="offer-form">
+        <div class="form-grid two-col">
+          <label class="field-wrap">
+            <span>Nome da oferta *</span>
+            <input name="name" required>
+          </label>
+          <label class="field-wrap">
+            <span>Nicho *</span>
+            <input name="niche" required placeholder="Ex: Emagrecimento">
+          </label>
+        </div>
+
+        <div class="form-grid two-col">
+          <label class="field-wrap">
+            <span>Micropersona</span>
+            <input name="micropersona" placeholder="Ex: Mulheres 35+ com rotina corrida">
+          </label>
+          <label class="field-wrap">
+            <span>Tipo de oferta</span>
+            <input name="offerType" placeholder="Ex: Protocolo, Desafio, VSL">
+          </label>
+        </div>
+
+        <label class="field-wrap">
+          <span>Mecanismo *</span>
+          <input name="mechanism" required placeholder="Ex: Rotina anti-inchaço com comida normal">
+        </label>
+
+        <label class="field-wrap">
+          <span>Promessa *</span>
+          <textarea name="promise" rows="2" required placeholder="Ex: Reduzir medidas em 14 dias sem academia"></textarea>
+        </label>
+
+        <div class="form-grid three-col">
+          <label class="field-wrap">
+            <span>Plataforma *</span>
+            <input name="sourcePlatform" required placeholder="Ex: Meta Ads">
+          </label>
+          <label class="field-wrap">
+            <span>Ticket de entrada</span>
+            <input name="entryPrice" type="number" step="0.01" min="0" placeholder="27.00">
+          </label>
+          <label class="field-wrap">
+            <span>Funil</span>
+            <input name="funnelType" placeholder="Ex: VSL + upsell">
+          </label>
+        </div>
+
+        <div class="url-block">
+          <div class="url-head">
+            <h4>URLs públicas</h4>
+            <button type="button" class="ghost-btn small" id="btn-enrich-url">Enriquecer URL principal</button>
+          </div>
+          <div class="form-grid three-col">
+            <label class="field-wrap">
+              <span>URL da origem</span>
+              <input name="sourceUrl" type="url" placeholder="https://...">
+            </label>
+            <label class="field-wrap">
+              <span>Landing page</span>
+              <input name="landingPageUrl" type="url" placeholder="https://...">
+            </label>
+            <label class="field-wrap">
+              <span>URL do criativo</span>
+              <input name="creativeUrl" type="url" placeholder="https://...">
+            </label>
+          </div>
+          <p class="helper-text" id="enrich-feedback">Use links públicos para guardar referência ou puxar metadados básicos.</p>
+        </div>
+
+        <div class="form-grid two-col">
+          <label class="field-wrap">
+            <span>Tags</span>
+            <input name="tags" placeholder="Separe por vírgulas">
+          </label>
+          <label class="field-wrap">
+            <span>Observações de modelagem</span>
+            <input name="modelNotes" placeholder="Como adaptar sem copiar literalmente">
+          </label>
+        </div>
+
+        <label class="field-wrap">
+          <span>Notas</span>
+          <textarea name="notes" rows="3" placeholder="O que chamou atenção nessa oferta?"></textarea>
+        </label>
+
+        <section class="signals-section">
+          <div class="signals-header">
+            <div>
+              <p class="section-kicker">Sinais de escala</p>
+              <h4>Score transparente</h4>
+            </div>
+            <div class="score-preview">
+              <span>Score atual</span>
+              <strong id="score-preview-value">0</strong>
+            </div>
+          </div>
+
+          <div class="signals-grid">
+            <label class="field-wrap signal-field">
+              <span>Repetição do anúncio</span>
+              <input name="signal-adRepetition" type="range" min="0" max="5" step="1" value="0">
+              <strong data-signal-value="adRepetition">0</strong>
+            </label>
+            <label class="field-wrap signal-field">
+              <span>Clareza da promessa</span>
+              <input name="signal-messageClarity" type="range" min="0" max="5" step="1" value="0">
+              <strong data-signal-value="messageClarity">0</strong>
+            </label>
+            <label class="field-wrap signal-field">
+              <span>Especificidade do mecanismo</span>
+              <input name="signal-mechanismSpecificity" type="range" min="0" max="5" step="1" value="0">
+              <strong data-signal-value="mechanismSpecificity">0</strong>
+            </label>
+            <label class="field-wrap signal-field">
+              <span>Facilidade percebida</span>
+              <input name="signal-easePerception" type="range" min="0" max="5" step="1" value="0">
+              <strong data-signal-value="easePerception">0</strong>
+            </label>
+            <label class="field-wrap signal-field">
+              <span>Presença de upsell</span>
+              <input name="signal-upsellPresence" type="range" min="0" max="5" step="1" value="0">
+              <strong data-signal-value="upsellPresence">0</strong>
+            </label>
+            <label class="field-wrap signal-field">
+              <span>Fit da micropersona</span>
+              <input name="signal-micropersonaFit" type="range" min="0" max="5" step="1" value="0">
+              <strong data-signal-value="micropersonaFit">0</strong>
+            </label>
+            <label class="field-wrap signal-field">
+              <span>Força do funil</span>
+              <input name="signal-funnelStrength" type="range" min="0" max="5" step="1" value="0">
+              <strong data-signal-value="funnelStrength">0</strong>
+            </label>
+          </div>
+        </section>
+
+        <div class="modal-actions">
+          <button type="button" class="ghost-btn" id="btn-delete-offer" hidden>Excluir</button>
+          <div class="modal-actions-right">
+            <button type="button" class="ghost-btn" id="btn-cancel-offer">Cancelar</button>
+            <button type="submit" class="primary-btn" id="btn-save-offer">Salvar oferta</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="meta-modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <p class="section-kicker">Meta Ads Radar</p>
+          <h3 id="meta-modal-title">Novo anúncio Meta</h3>
+        </div>
+        <button class="icon-btn" id="meta-modal-close" aria-label="Fechar formulário Meta">×</button>
+      </div>
+
+      <form id="meta-form" class="offer-form">
+        <div class="form-grid two-col">
+          <label class="field-wrap">
+            <span>Título do anúncio *</span>
+            <input name="adTitle" required>
+          </label>
+          <label class="field-wrap">
+            <span>Marca *</span>
+            <input name="brandName" required placeholder="Ex: VitalForge">
+          </label>
+        </div>
+
+        <div class="form-grid two-col">
+          <label class="field-wrap">
+            <span>Nicho *</span>
+            <input name="niche" required placeholder="Ex: Suplementos">
+          </label>
+          <label class="field-wrap">
+            <span>Tipo de oferta</span>
+            <input name="offerType" placeholder="Ex: Produto físico, Protocolo, Digital">
+          </label>
+        </div>
+
+        <div class="form-grid two-col">
+          <label class="field-wrap">
+            <span>Micropersona</span>
+            <input name="micropersona" placeholder="Ex: Mulheres 28-45 com foco em pele">
+          </label>
+          <label class="field-wrap">
+            <span>CTA</span>
+            <input name="cta" placeholder="Ex: Comprar agora">
+          </label>
+        </div>
+
+        <label class="field-wrap">
+          <span>Hook da copy</span>
+          <input name="copyHook" placeholder="A primeira frase que chama atenção no anúncio">
+        </label>
+
+        <label class="field-wrap">
+          <span>Mecanismo</span>
+          <input name="mechanism" placeholder="Ex: Protocolo guiado, rotina simples, solução específica">
+        </label>
+
+        <label class="field-wrap">
+          <span>Promessa *</span>
+          <textarea name="promise" rows="2" required placeholder="Ex: Melhorar o viço da pele em 21 dias sem rotina complexa"></textarea>
+        </label>
+
+        <div class="url-block">
+          <div class="url-head">
+            <h4>Links públicos</h4>
+            <button type="button" class="ghost-btn small" id="btn-meta-enrich-url">Enriquecer URL</button>
+          </div>
+          <div class="form-grid three-col">
+            <label class="field-wrap">
+              <span>URL da Ad Library *</span>
+              <input name="adLibraryUrl" type="url" required placeholder="https://www.facebook.com/ads/library/...">
+            </label>
+            <label class="field-wrap">
+              <span>Landing page</span>
+              <input name="landingPageUrl" type="url" placeholder="https://...">
+            </label>
+            <label class="field-wrap">
+              <span>URL do criativo</span>
+              <input name="creativeUrl" type="url" placeholder="https://...">
+            </label>
+          </div>
+          <p class="helper-text" id="meta-enrich-feedback">Cole o link da Ad Library e complete manualmente os sinais observáveis.</p>
+        </div>
+
+        <div class="form-grid three-col">
+          <label class="field-wrap">
+            <span>Tipo de criativo</span>
+            <select name="creativeType">
+              <option value="">Selecione</option>
+              <option value="Vídeo">Vídeo</option>
+              <option value="Imagem">Imagem</option>
+              <option value="Carousel">Carousel</option>
+              <option value="UGC">UGC</option>
+            </select>
+          </label>
+          <label class="field-wrap">
+            <span>Qtd. criativos</span>
+            <input name="creativeCount" type="number" min="0" step="1" placeholder="Ex: 4">
+          </label>
+          <label class="field-wrap">
+            <span>Dias rodando</span>
+            <input name="daysRunning" type="number" min="0" step="1" placeholder="Opcional">
+          </label>
+        </div>
+
+        <div class="form-grid two-col">
+          <label class="field-wrap">
+            <span>Primeira observação</span>
+            <input name="firstSeenAt" type="date">
+          </label>
+          <label class="field-wrap">
+            <span>Última observação</span>
+            <input name="lastSeenAt" type="date">
+          </label>
+        </div>
+
+        <div class="form-grid two-col">
+          <label class="field-wrap">
+            <span>Tags</span>
+            <input name="tags" placeholder="Separe por vírgulas">
+          </label>
+          <label class="field-wrap">
+            <span>Notas do formato</span>
+            <input name="adFormatNotes" placeholder="Ex: vídeo curto, antes/depois indireto, oferta em destaque">
+          </label>
+        </div>
+
+        <label class="field-wrap">
+          <span>Notas</span>
+          <textarea name="notes" rows="3" placeholder="O que faz esse anúncio parecer forte agora?"></textarea>
+        </label>
+
+        <section class="signals-section meta-signals-section">
+          <div class="signals-header">
+            <div>
+              <p class="section-kicker">Sinais públicos de escala</p>
+              <h4>Meta score transparente</h4>
+            </div>
+            <div class="score-preview">
+              <span>Meta score atual</span>
+              <strong id="meta-score-preview-value">0</strong>
+            </div>
+          </div>
+
+          <div class="signals-grid">
+            <label class="field-wrap signal-field">
+              <span>Recorrência / continuidade</span>
+              <input name="meta-signal-recurrenceStrength" type="range" min="0" max="5" step="1" value="0">
+              <strong data-meta-signal-value="recurrenceStrength">0</strong>
+            </label>
+            <label class="field-wrap signal-field">
+              <span>Volume criativo</span>
+              <input name="meta-signal-creativeVolume" type="range" min="0" max="5" step="1" value="0">
+              <strong data-meta-signal-value="creativeVolume">0</strong>
+            </label>
+            <label class="field-wrap signal-field">
+              <span>Clareza do hook</span>
+              <input name="meta-signal-hookClarity" type="range" min="0" max="5" step="1" value="0">
+              <strong data-meta-signal-value="hookClarity">0</strong>
+            </label>
+            <label class="field-wrap signal-field">
+              <span>Especificidade do mecanismo</span>
+              <input name="meta-signal-mechanismSpecificity" type="range" min="0" max="5" step="1" value="0">
+              <strong data-meta-signal-value="mechanismSpecificity">0</strong>
+            </label>
+            <label class="field-wrap signal-field">
+              <span>Clareza da oferta</span>
+              <input name="meta-signal-offerClarity" type="range" min="0" max="5" step="1" value="0">
+              <strong data-meta-signal-value="offerClarity">0</strong>
+            </label>
+            <label class="field-wrap signal-field">
+              <span>Força da landing page</span>
+              <input name="meta-signal-landingPageStrength" type="range" min="0" max="5" step="1" value="0">
+              <strong data-meta-signal-value="landingPageStrength">0</strong>
+            </label>
+            <label class="field-wrap signal-field">
+              <span>Força do CTA</span>
+              <input name="meta-signal-ctaStrength" type="range" min="0" max="5" step="1" value="0">
+              <strong data-meta-signal-value="ctaStrength">0</strong>
+            </label>
+            <label class="field-wrap signal-field">
+              <span>Fit da micropersona</span>
+              <input name="meta-signal-micropersonaFit" type="range" min="0" max="5" step="1" value="0">
+              <strong data-meta-signal-value="micropersonaFit">0</strong>
+            </label>
+          </div>
+        </section>
+
+        <div class="modal-actions">
+          <button type="button" class="ghost-btn" id="btn-delete-meta-ad" hidden>Excluir</button>
+          <div class="modal-actions-right">
+            <button type="button" class="ghost-btn" id="btn-cancel-meta-ad">Cancelar</button>
+            <button type="submit" class="primary-btn" id="btn-save-meta-ad">Salvar anúncio Meta</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="meta-import-modal" aria-hidden="true">
+    <div class="modal-card meta-import-modal-card">
+      <div class="modal-header">
+        <div>
+          <p class="section-kicker">Importação em lote</p>
+          <h3>Subir vários anúncios Meta por JSON</h3>
+        </div>
+        <button class="icon-btn" id="meta-import-modal-close" aria-label="Fechar importação em lote">×</button>
+      </div>
+
+      <div class="offer-form">
+        <div class="meta-import-layout">
+          <section class="url-block meta-import-editor">
+            <div class="url-head">
+              <h4>JSON de entrada</h4>
+              <button type="button" class="ghost-btn small" id="btn-fill-meta-import-example">Usar exemplo</button>
+            </div>
+            <textarea id="meta-import-input" rows="18" class="meta-import-textarea" placeholder='[
+  {
+    "adTitle": "...",
+    "brandName": "...",
+    "niche": "...",
+    "promise": "...",
+    "adLibraryUrl": "https://..."
+  }
+]'></textarea>
+            <p class="helper-text">Cole um array JSON. Campos mínimos: <code>adTitle</code>, <code>brandName</code>, <code>niche</code>, <code>promise</code>, <code>adLibraryUrl</code>.</p>
+          </section>
+
+          <section class="signals-section meta-import-sidecar">
+            <div class="signals-header">
+              <div>
+                <p class="section-kicker">Formato recomendado</p>
+                <h4>Modelo base</h4>
+              </div>
+            </div>
+            <div class="meta-json-preview compact-preview">
+              <pre id="meta-import-example">[
+  {
+    "adTitle": "Creatina Clean Performance",
+    "brandName": "VitalForge",
+    "niche": "Suplementos",
+    "promise": "Ganhar força e consistência sem complicar a suplementação",
+    "adLibraryUrl": "https://www.facebook.com/ads/library/"
+  }
+]</pre>
+            </div>
+            <div class="meta-import-result" id="meta-import-result">Cole seu JSON e rode a importação. Duplicatas por URL da Ad Library serão ignoradas.</div>
+          </section>
+        </div>
+
+        <div class="modal-actions">
+          <div class="modal-actions-right">
+            <button type="button" class="ghost-btn" id="btn-cancel-meta-import">Cancelar</button>
+            <button type="button" class="primary-btn" id="btn-run-meta-import">Importar JSON</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="scaled-import-modal" aria-hidden="true">
+    <div class="modal-card meta-import-modal-card">
+      <div class="modal-header">
+        <div>
+          <p class="section-kicker">Importação própria</p>
+          <h3>Subir anúncios na biblioteca inferior</h3>
+        </div>
+        <button class="icon-btn" id="scaled-import-modal-close" aria-label="Fechar importação da biblioteca">×</button>
+      </div>
+
+      <div class="offer-form">
+        <div class="meta-import-layout">
+          <section class="url-block meta-import-editor">
+            <div class="url-head">
+              <h4>JSON da biblioteca</h4>
+              <button type="button" class="ghost-btn small" id="btn-fill-scaled-import-example">Usar exemplo</button>
+            </div>
+            <textarea id="scaled-import-input" rows="18" class="meta-import-textarea" placeholder='[
+  {
+    "offerTitle": "...",
+    "brandName": "...",
+    "libraryUrl": "https://...",
+    "creativeUrl": "https://...",
+    "adsCount": 200
+  }
+]'></textarea>
+            <p class="helper-text">Campos mínimos: <code>offerTitle</code>, <code>brandName</code>, <code>libraryUrl</code> e <code>adsCount</code> >= 200.</p>
+          </section>
+
+          <section class="signals-section meta-import-sidecar">
+            <div class="signals-header">
+              <div>
+                <p class="section-kicker">Formato recomendado</p>
+                <h4>Modelo base</h4>
+              </div>
+            </div>
+            <div class="meta-json-preview compact-preview">
+              <pre id="scaled-import-example">[
+  {
+    "offerTitle": "Creatina Clean Performance",
+    "brandName": "VitalForge",
+    "libraryUrl": "https://www.facebook.com/ads/library/?id=706455939160239",
+    "creativeUrl": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=80",
+    "adsCount": 334
+  }
+]</pre>
+            </div>
+            <div class="meta-import-result" id="scaled-import-result">Cole seu JSON e rode a importação para abastecer a biblioteca independente.</div>
+          </section>
+        </div>
+
+        <div class="modal-actions">
+          <div class="modal-actions-right">
+            <button type="button" class="ghost-btn" id="btn-cancel-scaled-import">Cancelar</button>
+            <button type="button" class="primary-btn" id="btn-run-scaled-import">Importar biblioteca</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notifications" id="notifications"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

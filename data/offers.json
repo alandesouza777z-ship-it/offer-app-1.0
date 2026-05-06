@@ -1,0 +1,32 @@
+[
+  {
+    "id": "offer_1778001438739_fqgt472w",
+    "name": "emagrecimento 21 dias",
+    "niche": "emagrecimento",
+    "micropersona": "mulheres 25 anos",
+    "mechanism": "adasda",
+    "promise": "asdasdas",
+    "offerType": "quiz",
+    "entryPrice": 23,
+    "sourcePlatform": "adasdasd",
+    "sourceUrl": "https://google.com/",
+    "landingPageUrl": "",
+    "creativeUrl": "",
+    "funnelType": "vsl",
+    "tags": [],
+    "notes": "",
+    "modelNotes": "",
+    "signals": {
+      "adRepetition": 5,
+      "messageClarity": 5,
+      "mechanismSpecificity": 5,
+      "easePerception": 5,
+      "upsellPresence": 5,
+      "micropersonaFit": 5,
+      "funnelStrength": 5
+    },
+    "score": 100,
+    "createdAt": "2026-05-05T17:17:18.734Z",
+    "updatedAt": "2026-05-05T17:17:18.734Z"
+  }
+]
