@@ -3,224 +3,1165 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Offer Radar — Intelligence Dashboard</title>
+  <title>RoiMax Offer System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body class="is-booting">
-  <canvas id="constellation-canvas" class="constellation-canvas" aria-hidden="true"></canvas>
-  <div class="page-shell dashboard-shell">
-    <div class="ambient ambient-left"></div>
-    <div class="ambient ambient-right"></div>
-    <div class="ambient ambient-center"></div>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <header class="topbar topbar-command motion-assemble reveal-ready" data-assemble data-assemble-group="top" data-reveal data-depth="4">
-      <div class="topbar-copy">
-        <p class="eyebrow">Local offer intelligence</p>
-        <h1>Offer Radar</h1>
-        <p class="subcopy">Organize mecanismos, promessas, micropersonas e sinais de escala sem depender de planilhas soltas.</p>
-        <div class="hero-signature-row" aria-label="Assinatura visual do produto">
-          <span class="signature-chip signature-chip-accent">Purple intelligence stack</span>
-          <span class="signature-chip">Radar local</span>
-          <span class="signature-chip">Meta + biblioteca</span>
-        </div>
+    :root {
+      /* Deep luxury blue palette */
+      --bg: #04080f;
+      --bg-2: #070d18;
+      --surface: #0b1424;
+      --surface-2: #0f1c30;
+      --surface-3: #152238;
+      --border: rgba(180,150,60,0.15);
+      --border-strong: rgba(180,150,60,0.35);
+
+      /* Text */
+      --text: #eef2f8;
+      --text-2: #9aaec8;
+      --text-3: #5a7090;
+
+      /* Gold accent system */
+      --gold: #c9a84c;
+      --gold-light: #e8c96a;
+      --gold-dark: #9a7835;
+      --gold-bg: rgba(201,168,76,0.08);
+      --gold-border: rgba(201,168,76,0.3);
+
+      /* Blues */
+      --blue: #2c6fbe;
+      --blue-light: #4a8fd4;
+      --blue-bg: rgba(44,111,190,0.12);
+
+      /* Status */
+      --green: #3dc97a;
+      --green-bg: rgba(61,201,122,0.1);
+      --orange: #e8923c;
+      --orange-bg: rgba(232,146,60,0.1);
+      --red: #e05252;
+
+      --radius: 6px;
+      --radius-lg: 10px;
+      --shadow: 0 1px 4px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+      --shadow-md: 0 6px 24px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
+      --shadow-gold: 0 0 20px rgba(201,168,76,0.12);
+    }
+
+    html { font-size: 15px; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* Subtle noise texture on bg */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    /* ── LAYOUT ── */
+    .app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 228px;
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+    }
+
+    /* Sidebar gold line */
+    .sidebar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 2px;
+      height: 100%;
+      background: linear-gradient(180deg, transparent 0%, var(--gold) 30%, var(--gold-light) 60%, transparent 100%);
+      opacity: 0.5;
+    }
+
+    .sidebar-logo {
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+    .sidebar-logo-icon {
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .sidebar-logo h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dark) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+    .sidebar-logo p {
+      font-size: .7rem;
+      color: var(--text-3);
+      margin-top: 3px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    /* Gold ornament below logo */
+    .sidebar-logo::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 20px;
+      right: 20px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.4;
+    }
+
+    .sidebar-nav { padding: 14px 8px; flex: 1; }
+    .nav-label {
+      font-size: .62rem;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      padding: 8px 12px 5px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 12px;
+      border-radius: var(--radius);
+      font-size: .82rem;
+      font-weight: 400;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all .15s;
+      border: 1px solid transparent;
+      background: none;
+      width: 100%;
+      text-align: left;
+      letter-spacing: .01em;
+    }
+    .nav-item:hover {
+      background: var(--surface-2);
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .nav-item.active {
+      background: var(--gold-bg);
+      border-color: var(--gold-border);
+      color: var(--gold-light);
+      font-weight: 500;
+    }
+    .nav-item .icon { font-size: .95rem; flex-shrink: 0; }
+
+    .sidebar-footer {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      font-size: .68rem;
+      color: var(--text-3);
+      letter-spacing: .04em;
+    }
+    .sidebar-footer span { 
+      display: block;
+      color: var(--gold-dark);
+      font-weight: 500;
+    }
+
+    .main { flex: 1; min-width: 0; }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+
+    .topbar::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.25;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-eyebrow { 
+      font-size: .62rem; 
+      letter-spacing: .1em; 
+      text-transform: uppercase; 
+      color: var(--gold-dark);
+      font-weight: 500;
+    }
+    .topbar-title { 
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem; 
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: .02em;
+    }
+    .topbar-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--border-strong);
+    }
+    .topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 15px;
+      border-radius: var(--radius);
+      font-size: .8rem;
+      font-weight: 500;
+      font-family: 'Outfit', sans-serif;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .15s;
+      line-height: 1;
+      letter-spacing: .02em;
+    }
+    .btn-ghost {
+      background: transparent;
+      border-color: var(--border-strong);
+      color: var(--text-2);
+    }
+    .btn-ghost:hover { background: var(--surface-2); color: var(--text); border-color: var(--gold-border); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+      color: #0a0800;
+      font-weight: 600;
+      border-color: var(--gold);
+      box-shadow: 0 2px 12px rgba(201,168,76,0.25);
+    }
+    .btn-primary:hover { 
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+      box-shadow: 0 4px 20px rgba(201,168,76,0.4);
+      transform: translateY(-1px);
+    }
+    .btn-danger { background: transparent; border-color: rgba(224,82,82,0.3); color: var(--red); }
+    .btn-danger:hover { background: rgba(224,82,82,0.08); }
+    .btn-sm { padding: 5px 10px; font-size: .75rem; }
+
+    /* ── STATUS PILL ── */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: .72rem;
+      font-weight: 500;
+    }
+    .pill-ok { background: var(--green-bg); color: var(--green); border: 1px solid rgba(61,201,122,0.2); }
+    .pill-loading { background: var(--surface-2); color: var(--text-3); border: 1px solid var(--border); }
+    .pill-gold { background: var(--gold-bg); color: var(--gold); border: 1px solid var(--gold-border); }
+    .pill-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+    /* ── CONTENT ── */
+    .content { padding: 28px; max-width: 1240px; }
+
+    /* ── STAT CARDS ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 26px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 20px 16px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .stat-card:hover {
+      border-color: var(--gold-border);
+      box-shadow: var(--shadow-gold);
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold-dark), transparent);
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .stat-card:hover::before { opacity: 1; }
+
+    .stat-label { 
+      font-size: .68rem; 
+      color: var(--text-3); 
+      font-weight: 500; 
+      margin-bottom: 8px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .stat-value { 
+      font-size: 1.75rem; 
+      font-weight: 700; 
+      letter-spacing: -.02em; 
+      font-family: 'DM Mono', monospace; 
+      line-height: 1;
+      color: var(--text);
+    }
+    .stat-note { font-size: .7rem; color: var(--text-3); margin-top: 5px; }
+    .stat-card.accent { 
+      border-color: var(--gold-border);
+      background: linear-gradient(135deg, var(--surface) 0%, rgba(201,168,76,0.05) 100%);
+    }
+    .stat-card.accent .stat-value { 
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-card.accent::before { opacity: 1; }
+
+    /* ── SECTION ── */
+    .section { margin-bottom: 24px; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .section-title { font-size: .9rem; font-weight: 600; color: var(--text); }
+    .section-kicker {
+      font-size: .62rem;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--gold-dark);
+      margin-bottom: 2px;
+    }
+
+    /* ── PANEL ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+    .panel-body { padding: 18px; }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+    thead th {
+      text-align: left;
+      font-size: .62rem;
+      font-weight: 600;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      color: var(--gold-dark);
+      padding: 10px 16px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+    }
+    tbody td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      color: var(--text-2);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface-2); color: var(--text); cursor: pointer; }
+    .cell-name { font-weight: 600; max-width: 200px; color: var(--text); }
+    .cell-sub { color: var(--text-3); font-size: .72rem; margin-top: 2px; }
+    .empty-row { text-align: center; color: var(--text-3); padding: 40px 16px; font-size: .82rem; }
+
+    /* ── SCORE BADGE ── */
+    .score-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 24px;
+      border-radius: 5px;
+      font-size: .73rem;
+      font-weight: 700;
+      font-family: 'DM Mono', monospace;
+    }
+    .score-high { background: var(--green-bg); color: var(--green); border: 1px solid rgba(61,201,122,0.2); }
+    .score-mid { background: var(--orange-bg); color: var(--orange); border: 1px solid rgba(232,146,60,0.2); }
+    .score-low { background: var(--surface-2); color: var(--text-3); border: 1px solid var(--border); }
+    .score-gold { background: var(--gold-bg); color: var(--gold); border: 1px solid var(--gold-border); }
+
+    /* ── SCORE DISTRIBUTION ── */
+    .score-bands { display: flex; flex-direction: column; gap: 7px; }
+    .score-band-row { display: flex; align-items: center; gap: 10px; font-size: .75rem; }
+    .score-band-label { width: 60px; color: var(--text-2); flex-shrink: 0; }
+    .score-band-bar-wrap { flex: 1; height: 6px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+    .score-band-bar { 
+      height: 100%; 
+      border-radius: 99px; 
+      background: linear-gradient(90deg, var(--gold-dark), var(--gold-light)); 
+      transition: width .5s cubic-bezier(0.4,0,0.2,1);
+    }
+    .score-band-count { width: 24px; text-align: right; color: var(--text-3); flex-shrink: 0; font-family: 'DM Mono', monospace; font-size: .7rem; }
+
+    /* ── FILTERS ── */
+    .filters-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 14px;
+    }
+    .field-wrap { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px; }
+    .field-wrap > span { font-size: .68rem; font-weight: 500; color: var(--text-3); letter-spacing: .05em; text-transform: uppercase; }
+    .field-wrap input,
+    .field-wrap select,
+    .field-wrap textarea {
+      padding: 8px 11px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: .8rem;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .field-wrap input:focus,
+    .field-wrap select:focus,
+    .field-wrap textarea:focus { 
+      border-color: var(--gold); 
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.08);
+    }
+    .field-wrap select option { background: var(--surface-2); }
+
+    /* ── TWO-COL GRID ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .grid-content { display: grid; grid-template-columns: 1fr 280px; gap: 16px; }
+
+    /* ── INSIGHTS PANEL ── */
+    .ranking-block { margin-bottom: 18px; }
+    .ranking-block h4 { font-size: .7rem; font-weight: 600; margin-bottom: 8px; color: var(--text-3); letter-spacing: .07em; text-transform: uppercase; }
+    .ranking-list { display: flex; flex-direction: column; gap: 4px; }
+    .ranking-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: .77rem;
+      padding: 5px 8px;
+      border-radius: 5px;
+      color: var(--text-2);
+    }
+    .ranking-row:hover { background: var(--surface-2); color: var(--text); }
+    .ranking-count {
+      font-family: 'DM Mono', monospace;
+      font-size: .7rem;
+      color: var(--gold-dark);
+      background: var(--gold-bg);
+      padding: 1px 7px;
+      border-radius: 4px;
+      border: 1px solid var(--gold-border);
+    }
+    .tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      padding: 3px 9px;
+      border-radius: 99px;
+      font-size: .7rem;
+      background: var(--surface-2);
+      color: var(--text-3);
+      border: 1px solid var(--border);
+      transition: all .12s;
+    }
+    .tag:hover { border-color: var(--gold-border); color: var(--gold); }
+
+    /* ── INTEL CHIPS ── */
+    .intel-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .intel-chip {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+    }
+    .intel-chip .intel-label { font-size: .62rem; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+    .intel-chip strong { font-size: .8rem; color: var(--text); }
+    .intel-chip.accent { background: var(--gold-bg); border-color: var(--gold-border); }
+    .intel-chip.accent strong { color: var(--gold); }
+
+    /* ── MODULE SECTIONS ── */
+    .module { display: none; }
+    .module.active { display: block; }
+
+    /* ── MODULE HERO ── */
+    .module-hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 26px;
+      margin-bottom: 22px;
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+      position: relative;
+      overflow: hidden;
+    }
+    .module-hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+    }
+    .module-hero::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .module-hero-copy { flex: 1; position: relative; z-index: 1; }
+    .module-hero-copy h2 { 
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem; 
+      font-weight: 600;
+      line-height: 1.3; 
+      margin: 6px 0 10px; 
+      color: var(--text);
+    }
+    .module-hero-copy p { font-size: .82rem; color: var(--text-2); line-height: 1.65; }
+    .module-hero-copy p.disclaimer { font-size: .72rem; color: var(--text-3); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; }
+    .module-hero-metrics {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex-shrink: 0;
+      min-width: 188px;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-metric {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 11px 14px;
+    }
+    .hero-metric span { font-size: .68rem; color: var(--text-3); display: block; margin-bottom: 4px; letter-spacing: .05em; text-transform: uppercase; }
+    .hero-metric strong { font-size: 1.15rem; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--text); }
+    .hero-metric.accent { background: var(--gold-bg); border-color: var(--gold-border); }
+    .hero-metric.accent strong { color: var(--gold-light); }
+
+    /* ── COMMAND BAR ── */
+    .command-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin-bottom: 14px;
+    }
+    .command-bar-info h3 { font-size: .88rem; font-weight: 600; color: var(--text); }
+    .command-bar-info p { font-size: .75rem; color: var(--text-2); margin-top: 2px; }
+    .command-bar-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    /* ── IMPORT SECTION ── */
+    .import-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+    .import-stat-boxes { display: flex; gap: 10px; margin: 12px 0; }
+    .import-stat {
+      flex: 1;
+      text-align: center;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+    }
+    .import-stat span { font-size: .68rem; color: var(--text-3); display: block; letter-spacing: .05em; text-transform: uppercase; }
+    .import-stat strong { font-size: 1.15rem; font-weight: 700; font-family: 'DM Mono', monospace; margin-top: 3px; display: block; color: var(--text); }
+    .import-log { font-size: .76rem; color: var(--text-2); background: var(--surface-2); border-radius: var(--radius); padding: 10px 12px; border: 1px solid var(--border); }
+    .code-block {
+      background: var(--bg);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 12px;
+      font-size: .7rem;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-3);
+      overflow-x: auto;
+    }
+    .helper-text { font-size: .7rem; color: var(--text-3); margin-top: 4px; }
+    code { font-family: 'DM Mono', monospace; background: var(--surface-2); padding: 1px 5px; border-radius: 3px; font-size: .85em; color: var(--gold); }
+
+    /* ── SIGNALS SECTION ── */
+    .signals-section {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin-top: 14px;
+    }
+    .signals-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .signals-header h4 { font-size: .85rem; font-weight: 600; color: var(--text); }
+    .score-preview { display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--text-2); }
+    .score-preview strong {
+      font-size: 1.3rem;
+      font-weight: 700;
+      font-family: 'DM Mono', monospace;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .signals-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .signal-field { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 8px; }
+    .signal-field > span { flex: 1; font-size: .76rem; color: var(--text-2); }
+    .signal-field input[type="range"] { width: 90px; flex-shrink: 0; cursor: pointer; accent-color: var(--gold); }
+    .signal-field strong { font-family: 'DM Mono', monospace; font-size: .82rem; width: 18px; text-align: right; flex-shrink: 0; color: var(--gold); }
+
+    /* ── SCALED RESULTS GRID ── */
+    .scaled-results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+    .scaled-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s, transform .2s;
+    }
+    .scaled-card:hover {
+      border-color: var(--gold-border);
+      box-shadow: var(--shadow-gold);
+      transform: translateY(-2px);
+    }
+    .scaled-card-img { width: 100%; height: 140px; object-fit: cover; display: block; background: var(--surface-2); }
+    .scaled-card-body { padding: 12px; }
+    .scaled-card-body h4 { font-size: .82rem; font-weight: 600; line-height: 1.3; color: var(--text); }
+    .scaled-card-meta { font-size: .7rem; color: var(--text-3); margin-top: 4px; }
+    .scaled-empty { text-align: center; color: var(--text-3); padding: 40px; font-size: .85rem; grid-column: 1/-1; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 20px;
+      overflow-y: auto;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 660px;
+      box-shadow: var(--shadow-md), 0 0 40px rgba(201,168,76,0.08);
+      margin: auto;
+      position: relative;
+    }
+    .modal-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+    .modal-card.wide { max-width: 820px; }
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 700; color: var(--text); letter-spacing: .02em; }
+    .modal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-footer-right { display: flex; gap: 8px; }
+
+    .icon-btn {
+      width: 30px; height: 30px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--text-3);
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .12s;
+    }
+    .icon-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--gold-border); }
+
+    /* ── DRAWER ── */
+    .drawer-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      backdrop-filter: blur(3px);
+      z-index: 90;
+    }
+    .drawer-backdrop.open { display: block; }
+    .drawer {
+      position: fixed;
+      top: 0; right: 0;
+      width: 450px;
+      height: 100vh;
+      background: var(--surface);
+      border-left: 1px solid var(--border-strong);
+      z-index: 95;
+      transform: translateX(100%);
+      transition: transform .22s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: -4px 0 32px rgba(0,0,0,0.5);
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      background: var(--surface-2);
+    }
+    .drawer-header h3 { font-family: 'Cormorant Garamond', serif; font-size: .95rem; font-weight: 700; color: var(--text); }
+    .drawer-content { flex: 1; overflow-y: auto; padding: 20px; font-size: .82rem; color: var(--text-2); }
+
+    /* ── URL BLOCK ── */
+    .url-block {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      background: var(--surface-2);
+    }
+    .url-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .url-head h4 { font-size: .82rem; font-weight: 600; color: var(--text); }
+
+    /* ── IMPORT MODAL ── */
+    .import-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .import-textarea {
+      width: 100%;
+      resize: vertical;
+      min-height: 200px;
+      font-family: 'DM Mono', monospace;
+      font-size: .72rem;
+    }
+    .import-result {
+      font-size: .76rem;
+      color: var(--text-2);
+      background: var(--surface-2);
+      border-radius: var(--radius);
+      padding: 10px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── NOTIFICATIONS ── */
+    .notifications {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .notification {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--gold-border);
+      padding: 10px 16px;
+      border-radius: var(--radius-lg);
+      font-size: .8rem;
+      box-shadow: var(--shadow-md);
+      pointer-events: auto;
+      animation: slideUp .2s ease;
+    }
+    .notification.success { background: var(--surface); border-color: rgba(61,201,122,0.3); color: var(--green); }
+    .notification.error { background: var(--surface); border-color: rgba(224,82,82,0.3); color: var(--red); }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } }
+
+    /* ── DECORATIVE DIVIDER ── */
+    .gold-divider {
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dark), transparent);
+      margin: 16px 0;
+      opacity: 0.4;
+    }
+    hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .sidebar { width: 58px; }
+      .sidebar-logo p, .nav-item span:not(.icon), .sidebar-footer { display: none; }
+      .nav-item { justify-content: center; padding: 10px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .grid-content { grid-template-columns: 1fr; }
+      .module-hero { flex-direction: column; }
+      .signals-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── OVERVIEW HEADER ── */
+    .overview-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 26px;
+    }
+    .overview-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gold-bg);
+      border: 1px solid var(--gold-border);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: .72rem;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: .06em;
+    }
+    .overview-badge::before {
+      content: '◆';
+      font-size: .5rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <span class="sidebar-logo-icon">◆</span>
+      <h1>RoiMax</h1>
+      <p>Offer System</p>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-label">Módulos</div>
+      <button class="nav-item active" data-module="overview" onclick="switchModule('overview', this)">
+        <span class="icon">📊</span>
+        <span>Visão Geral</span>
+      </button>
+      <button class="nav-item" data-module="meta" onclick="switchModule('meta', this)">
+        <span class="icon">📡</span>
+        <span>Meta Ads Radar</span>
+      </button>
+      <button class="nav-item" data-module="library" onclick="switchModule('library', this)">
+        <span class="icon">📚</span>
+        <span>Biblioteca Meta</span>
+      </button>
+      <button class="nav-item" data-module="offers" onclick="switchModule('offers', this)">
+        <span class="icon">📋</span>
+        <span>Ofertas</span>
+      </button>
+    </div>
+    <div class="sidebar-footer">
+      <span>RoiMax Offer System</span>
+      Intelligence Engine v2
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-eyebrow">RoiMax</span>
+        <div class="topbar-divider"></div>
+        <span class="topbar-title" id="topbar-title">Visão Geral</span>
       </div>
       <div class="topbar-actions">
-        <span id="connection-status" class="status-pill">Carregando...</span>
-        <button class="ghost-btn" id="btn-refresh">Atualizar base</button>
-        <button class="primary-btn" id="btn-new-offer">+ Nova oferta</button>
+        <span id="connection-status" class="pill pill-loading"><span class="pill-dot"></span>Carregando</span>
+        <button class="btn btn-ghost" id="btn-refresh">↺ Atualizar</button>
+        <button class="btn btn-primary" id="btn-new-offer">+ Nova oferta</button>
       </div>
     </header>
 
-    <main class="dashboard-main">
-      <section class="hero-grid primary-hero-grid motion-assemble reveal-ready" data-assemble data-assemble-group="center-float" data-reveal data-depth="3">
-        <article class="hero-panel hero-panel-main radar-hero-panel motion-parallax" data-depth="6">
-          <div class="hero-copy">
-            <p class="section-kicker">Radar do momento</p>
-            <h2>Leia o mercado como quem monta dossiês, não como quem coleciona anúncios.</h2>
-            <p>
-              Cadastre ofertas manualmente, anexe URLs públicas e ranqueie tudo por sinais de escala: repetição,
-              clareza, especificidade do mecanismo, força do funil e aderência de micropersona.
-            </p>
-          </div>
-          <div class="hero-metrics" id="hero-metrics">
-            <div class="hero-metric-card">
-              <span>Total mapeado</span>
-              <strong id="hero-total-offers">0</strong>
-            </div>
-            <div class="hero-metric-card accent-card">
-              <span>Score médio</span>
-              <strong id="hero-average-score">0</strong>
-            </div>
-            <div class="hero-metric-card">
-              <span>Topo do radar</span>
-              <strong id="hero-top-platform">-</strong>
-            </div>
-          </div>
-        </article>
+    <div class="content">
 
-        <article class="hero-panel signal-panel radar-side-panel motion-parallax" data-depth="9">
-          <div class="section-head compact">
-            <div>
-              <p class="section-kicker">Leitura rápida</p>
-              <h3>Distribuição de score</h3>
+      <!-- ══ MÓDULO: VISÃO GERAL ══ -->
+      <div class="module active" id="module-overview">
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Total de ofertas</div>
+            <div class="stat-value" id="total-offers">0</div>
+            <div class="stat-note">Dossiês ativos</div>
+          </div>
+          <div class="stat-card accent">
+            <div class="stat-label">Score médio</div>
+            <div class="stat-value" id="average-score">0</div>
+            <div class="stat-note">Qualidade dos sinais</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Melhor score</div>
+            <div class="stat-value" id="highest-score">0</div>
+            <div class="stat-note">Oferta mais promissora</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Ticket médio</div>
+            <div class="stat-value" id="average-entry-price">R$0</div>
+            <div class="stat-note">Faixa média de entrada</div>
+          </div>
+        </div>
+
+        <div class="grid-content">
+          <div>
+            <div class="section">
+              <div class="section-header">
+                <div>
+                  <div class="section-kicker">Radar do momento</div>
+                  <div class="section-title">Leitura do mercado</div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-head">
+                  <span style="font-size:.82rem;font-weight:600;color:var(--text);">Ofertas classificadas</span>
+                  <span class="pill pill-gold" id="offers-counter-overview">0 ofertas</span>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Oferta</th>
+                        <th>Nicho</th>
+                        <th>Plataforma</th>
+                        <th>Ticket</th>
+                        <th>Score</th>
+                      </tr>
+                    </thead>
+                    <tbody id="overview-offers-body">
+                      <tr><td colspan="5" class="empty-row">Carregando ofertas...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
-          <div id="score-bands" class="score-bands"></div>
-        </article>
-      </section>
 
-      <section class="summary-grid executive-summary-grid motion-assemble reveal-ready" id="summary-grid" data-assemble data-assemble-group="bottom" data-reveal data-depth="2">
-        <article class="summary-card motion-parallax" data-depth="5">
-          <span class="summary-label">Ofertas</span>
-          <strong class="summary-value" id="total-offers">0</strong>
-          <small class="summary-note">Dossiês ativos no dashboard</small>
-        </article>
-        <article class="summary-card motion-parallax" data-depth="8">
-          <span class="summary-label">Score médio</span>
-          <strong class="summary-value" id="average-score">0</strong>
-          <small class="summary-note">Qualidade média dos sinais</small>
-        </article>
-        <article class="summary-card motion-parallax" data-depth="6">
-          <span class="summary-label">Melhor score</span>
-          <strong class="summary-value" id="highest-score">0</strong>
-          <small class="summary-note">Oferta mais promissora hoje</small>
-        </article>
-        <article class="summary-card motion-parallax" data-depth="4">
-          <span class="summary-label">Ticket médio</span>
-          <strong class="summary-value" id="average-entry-price">R$ 0,00</strong>
-          <small class="summary-note">Faixa média de entrada</small>
-        </article>
-      </section>
+          <div>
+            <div class="section">
+              <div class="section-header">
+                <div>
+                  <div class="section-kicker">Leitura rápida</div>
+                  <div class="section-title">Distribuição de score</div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-body">
+                  <div id="score-bands" class="score-bands"></div>
+                </div>
+              </div>
+            </div>
 
-      <section class="meta-radar-shell module-shell module-shell-meta motion-assemble reveal-ready" data-assemble data-assemble-group="left" data-reveal data-depth="4">
-        <article class="hero-panel hero-panel-main meta-module-head module-hero-panel motion-parallax" data-depth="7">
-          <div class="hero-copy">
-            <p class="section-kicker">Meta Ads Radar</p>
-            <h2>Mapeie os anúncios mais fortes agora por sinais públicos de escala.</h2>
-            <p>
-              Cole links da Meta Ad Library, registre criativos, promessas, marcas e sinais observáveis. O ranking abaixo
-              é local e semi-automático: ele prioriza recorrência, recência, clareza e estrutura da oferta.
-            </p>
-            <p class="meta-disclaimer">Não é um ranking oficial da Meta. É um radar prático de escala com base em sinais públicos.</p>
+            <div class="section">
+              <div class="section-header">
+                <div>
+                  <div class="section-kicker">Tendências</div>
+                  <div class="section-title">O que mais aparece</div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-body">
+                  <div class="ranking-block">
+                    <h4>Mecanismos</h4>
+                    <div id="ranking-mechanisms" class="ranking-list"></div>
+                  </div>
+                  <div class="gold-divider"></div>
+                  <div class="ranking-block">
+                    <h4>Plataformas</h4>
+                    <div id="ranking-platforms" class="ranking-list"></div>
+                  </div>
+                  <div class="gold-divider"></div>
+                  <div class="ranking-block">
+                    <h4>Tags quentes</h4>
+                    <div id="ranking-tags" class="tag-cloud"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="hero-metrics">
-            <div class="hero-metric-card glass-card">
+        </div>
+      </div>
+
+      <!-- ══ MÓDULO: META ADS RADAR ══ -->
+      <div class="module" id="module-meta">
+        <div class="module-hero">
+          <div class="module-hero-copy">
+            <div class="section-kicker">Meta Ads Radar</div>
+            <h2>Mapeie os anúncios mais fortes por sinais públicos de escala.</h2>
+            <p>Cole links da Meta Ad Library, registre criativos, promessas, marcas e sinais observáveis. O ranking prioriza recorrência, recência, clareza e estrutura da oferta.</p>
+            <p class="disclaimer">Não é um ranking oficial da Meta. É um radar prático com base em sinais públicos.</p>
+            <div class="intel-row">
+              <div class="intel-chip"><span class="intel-label">Leitura</span><strong>Ranking por sinais</strong></div>
+              <div class="intel-chip"><span class="intel-label">Fluxo</span><strong>Cadastro + lote JSON</strong></div>
+              <div class="intel-chip accent"><span class="intel-label">Modo</span><strong>Semiautomático local</strong></div>
+            </div>
+          </div>
+          <div class="module-hero-metrics">
+            <div class="hero-metric">
               <span>Anúncios vivos</span>
               <strong id="meta-hero-total-ads">0</strong>
             </div>
-            <div class="hero-metric-card accent-card meta-accent-card">
+            <div class="hero-metric accent">
               <span>Meta score médio</span>
               <strong id="meta-hero-average-score">0</strong>
             </div>
-            <div class="hero-metric-card glass-card">
+            <div class="hero-metric">
               <span>Marca em destaque</span>
-              <strong id="meta-hero-top-brand">-</strong>
+              <strong id="meta-hero-top-brand">—</strong>
             </div>
           </div>
-        </article>
+        </div>
 
-        <section class="summary-grid reveal-ready" id="meta-summary-grid" data-reveal data-depth="2">
-          <article class="summary-card meta-summary-card">
-            <span class="summary-label">Ads mapeados</span>
-            <strong class="summary-value" id="meta-total-ads">0</strong>
-            <small class="summary-note">Anúncios observados na Ad Library</small>
-          </article>
-          <article class="summary-card meta-summary-card">
-            <span class="summary-label">Meta score</span>
-            <strong class="summary-value" id="meta-average-score">0</strong>
-            <small class="summary-note">Força média dos sinais públicos</small>
-          </article>
-          <article class="summary-card meta-summary-card">
-            <span class="summary-label">Top score</span>
-            <strong class="summary-value" id="meta-highest-score">0</strong>
-            <small class="summary-note">Anúncio com leitura mais forte hoje</small>
-          </article>
-          <article class="summary-card meta-summary-card">
-            <span class="summary-label">Criativos médios</span>
-            <strong class="summary-value" id="meta-average-creative-count">0</strong>
-            <small class="summary-note">Volume médio por anúncio observado</small>
-          </article>
-        </section>
-
-        <section class="meta-command-deck">
-          <article class="meta-command-bar reveal-ready motion-parallax" data-reveal data-depth="5">
-            <div>
-              <p class="section-kicker">Command center</p>
-              <h3>Operações do Meta Radar</h3>
-              <p class="muted-text">Use o cadastro unitário para leitura fina e a importação em lote para abastecer o radar com rapidez.</p>
-            </div>
-            <div class="meta-command-actions">
-              <button class="ghost-btn" id="btn-open-meta-import">Importar em lote</button>
-              <button class="primary-btn" id="btn-new-meta-ad">+ Novo anúncio Meta</button>
-            </div>
-          </article>
-          <article class="meta-intelligence-strip reveal-ready motion-parallax" data-reveal data-depth="7">
-            <div class="intel-chip">
-              <span class="intel-label">Leitura</span>
-              <strong>Ranking por sinais públicos</strong>
-            </div>
-            <div class="intel-chip">
-              <span class="intel-label">Fluxo</span>
-              <strong>Cadastro fino + lote JSON</strong>
-            </div>
-            <div class="intel-chip intel-chip-accent">
-              <span class="intel-label">Modo</span>
-              <strong>Semiautomático e local</strong>
-            </div>
-          </article>
-        </section>
-
-        <section class="filters-panel meta-filters-panel meta-elevated-panel reveal-ready motion-parallax" data-reveal data-depth="6">
-          <div class="section-head compact">
-            <div>
-              <p class="section-kicker">Filtragem Meta</p>
-              <h3>Refine o radar Meta Ads</h3>
-            </div>
+        <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
+          <div class="stat-card">
+            <div class="stat-label">Ads mapeados</div>
+            <div class="stat-value" id="meta-total-ads">0</div>
+            <div class="stat-note">Anúncios na Ad Library</div>
           </div>
-          <div class="filters-grid meta-filters-grid">
-            <label class="field-wrap meta-search-field">
-              <span>Busca</span>
-              <input id="meta-filter-search" type="text" placeholder="Título, marca, hook, promessa...">
-            </label>
-            <label class="field-wrap">
-              <span>Nicho</span>
-              <select id="meta-filter-niche"><option value="">Todos</option></select>
-            </label>
-            <label class="field-wrap">
-              <span>Marca</span>
-              <select id="meta-filter-brand"><option value="">Todas</option></select>
-            </label>
-            <label class="field-wrap">
-              <span>Criativo</span>
-              <select id="meta-filter-creative-type"><option value="">Todos</option></select>
-            </label>
-            <label class="field-wrap">
-              <span>Tag</span>
-              <select id="meta-filter-tag"><option value="">Todas</option></select>
-            </label>
-            <label class="field-wrap">
-              <span>Meta score mínimo</span>
-              <input id="meta-filter-min-score" type="number" min="0" max="100" step="1" placeholder="0">
-            </label>
+          <div class="stat-card accent">
+            <div class="stat-label">Meta score médio</div>
+            <div class="stat-value" id="meta-average-score">0</div>
+            <div class="stat-note">Força dos sinais públicos</div>
           </div>
-          <div class="meta-filter-footnote">Para lote, cole um JSON array com vários anúncios Meta. O radar ignora duplicatas por URL da Ad Library.</div>
-        </section>
+          <div class="stat-card">
+            <div class="stat-label">Top score</div>
+            <div class="stat-value" id="meta-highest-score">0</div>
+            <div class="stat-note">Anúncio mais forte</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Criativos médios</div>
+            <div class="stat-value" id="meta-average-creative-count">0</div>
+            <div class="stat-note">Volume por anúncio</div>
+          </div>
+        </div>
 
-        <section class="content-grid reveal-ready" data-reveal data-depth="3">
-          <section class="offers-panel meta-table-panel meta-elevated-panel motion-parallax" data-depth="8">
-            <div class="section-head">
+        <div class="command-bar">
+          <div class="command-bar-info">
+            <h3>Operações do Meta Radar</h3>
+            <p>Cadastro unitário para leitura fina · importação em lote para abastecer rapidamente</p>
+          </div>
+          <div class="command-bar-actions">
+            <button class="btn btn-ghost" id="btn-open-meta-import">↑ Importar em lote</button>
+            <button class="btn btn-primary" id="btn-new-meta-ad">+ Novo anúncio Meta</button>
+          </div>
+        </div>
+
+        <div class="filters-bar">
+          <div class="field-wrap" style="min-width:200px;flex:2">
+            <span>Busca</span>
+            <input id="meta-filter-search" type="text" placeholder="Título, marca, hook, promessa...">
+          </div>
+          <div class="field-wrap">
+            <span>Nicho</span>
+            <select id="meta-filter-niche"><option value="">Todos</option></select>
+          </div>
+          <div class="field-wrap">
+            <span>Marca</span>
+            <select id="meta-filter-brand"><option value="">Todas</option></select>
+          </div>
+          <div class="field-wrap">
+            <span>Criativo</span>
+            <select id="meta-filter-creative-type"><option value="">Todos</option></select>
+          </div>
+          <div class="field-wrap">
+            <span>Tag</span>
+            <select id="meta-filter-tag"><option value="">Todas</option></select>
+          </div>
+          <div class="field-wrap" style="min-width:100px">
+            <span>Score mínimo</span>
+            <input id="meta-filter-min-score" type="number" min="0" max="100" placeholder="0">
+          </div>
+        </div>
+
+        <div class="grid-content">
+          <div class="panel">
+            <div class="panel-head">
               <div>
-                <p class="section-kicker">Maior sinal de escala agora</p>
-                <h3>Meta Ads Radar</h3>
+                <div class="section-kicker">Maior sinal de escala</div>
+                <span style="font-weight:600;font-size:.88rem;color:var(--text);">Meta Ads Radar</span>
               </div>
-              <div class="offers-head-actions meta-table-meta">
-                <span class="muted-text" id="meta-ads-counter">0 anúncios</span>
-              </div>
+              <span class="pill pill-gold" id="meta-ads-counter">0 anúncios</span>
             </div>
-            <div class="table-shell meta-table-shell">
+            <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
@@ -229,7 +1170,7 @@
                     <th>Mecanismo</th>
                     <th>Criativo</th>
                     <th>Dias</th>
-                    <th>Meta score</th>
+                    <th>Score</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -238,55 +1179,50 @@
                 </tbody>
               </table>
             </div>
-          </section>
+          </div>
 
-          <aside class="insights-panel meta-insights-panel meta-elevated-panel motion-parallax" data-depth="10">
-            <div class="section-head compact">
-              <div>
-                <p class="section-kicker">Leitura do módulo</p>
-                <h3>O que mais está aparecendo</h3>
+          <div>
+            <div class="panel">
+              <div class="panel-body">
+                <div class="ranking-block">
+                  <h4>Distribuição de Meta score</h4>
+                  <div id="meta-score-bands" class="score-bands"></div>
+                </div>
+                <div class="gold-divider"></div>
+                <div class="ranking-block">
+                  <h4>Marcas dominantes</h4>
+                  <div id="meta-ranking-brands" class="ranking-list"></div>
+                </div>
+                <div class="ranking-block">
+                  <h4>Nichos</h4>
+                  <div id="meta-ranking-niches" class="ranking-list"></div>
+                </div>
+                <div class="gold-divider"></div>
+                <div class="ranking-block">
+                  <h4>Tipos de criativo</h4>
+                  <div id="meta-ranking-creative-types" class="ranking-list"></div>
+                </div>
+                <div class="ranking-block">
+                  <h4>Tags quentes</h4>
+                  <div id="meta-ranking-tags" class="tag-cloud"></div>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            <div class="ranking-block">
-              <h4>Distribuição de Meta score</h4>
-              <div id="meta-score-bands" class="score-bands"></div>
-            </div>
-
-            <div class="ranking-block">
-              <h4>Marcas dominantes</h4>
-              <div id="meta-ranking-brands" class="ranking-list"></div>
-            </div>
-
-            <div class="ranking-block">
-              <h4>Nichos</h4>
-              <div id="meta-ranking-niches" class="ranking-list"></div>
-            </div>
-
-            <div class="ranking-block">
-              <h4>Tipos de criativo</h4>
-              <div id="meta-ranking-creative-types" class="ranking-list"></div>
-            </div>
-
-            <div class="ranking-block">
-              <h4>Tags quentes</h4>
-              <div id="meta-ranking-tags" class="tag-cloud"></div>
-            </div>
-          </aside>
-        </section>
-
-        <section class="content-grid meta-bottom-grid reveal-ready" data-reveal data-depth="4">
-          <section class="offers-panel meta-import-promo meta-elevated-panel">
-            <div class="section-head compact">
+        <div class="import-grid">
+          <div class="panel">
+            <div class="panel-head">
               <div>
-                <p class="section-kicker">Importação em lote</p>
-                <h3>Abasteça o radar com JSON colado</h3>
+                <div class="section-kicker">Importação em lote</div>
+                <span style="font-weight:600;font-size:.85rem;color:var(--text);">Abasteça o radar com JSON</span>
               </div>
-              <button class="ghost-btn" id="btn-open-meta-import-inline">Abrir importador</button>
+              <button class="btn btn-ghost btn-sm" id="btn-open-meta-import-inline">Abrir importador</button>
             </div>
-            <p class="muted-text">Formato recomendado para acelerar o mapeamento sem sacrificar a precisão. Ideal para colar vários anúncios e depois refinar os melhores manualmente.</p>
-            <div class="meta-json-preview">
-              <pre>[
+            <div class="panel-body">
+              <p style="font-size:.76rem;color:var(--text-2);margin-bottom:10px;">Formato recomendado para acelerar o mapeamento.</p>
+              <div class="code-block">[
   {
     "adTitle": "...",
     "brandName": "...",
@@ -294,96 +1230,99 @@
     "promise": "...",
     "adLibraryUrl": "https://..."
   }
-]</pre>
+]</div>
             </div>
-          </section>
-          <section class="offers-panel meta-import-feedback meta-elevated-panel">
-            <div class="section-head compact">
+          </div>
+          <div class="panel">
+            <div class="panel-head">
               <div>
-                <p class="section-kicker">Resumo operacional</p>
-                <h3>Resultado da última importação</h3>
+                <div class="section-kicker">Resumo operacional</div>
+                <span style="font-weight:600;font-size:.85rem;color:var(--text);">Última importação</span>
               </div>
             </div>
-            <div class="meta-import-stats" id="meta-import-stats">
-              <div class="meta-stat-box"><span>Importados</span><strong id="meta-imported-count">0</strong></div>
-              <div class="meta-stat-box"><span>Ignorados</span><strong id="meta-skipped-count">0</strong></div>
-              <div class="meta-stat-box"><span>Erros</span><strong id="meta-error-count">0</strong></div>
+            <div class="panel-body">
+              <div class="import-stat-boxes" id="meta-import-stats">
+                <div class="import-stat"><span>Importados</span><strong id="meta-imported-count">0</strong></div>
+                <div class="import-stat"><span>Ignorados</span><strong id="meta-skipped-count">0</strong></div>
+                <div class="import-stat"><span>Erros</span><strong id="meta-error-count">0</strong></div>
+              </div>
+              <div class="import-log" id="meta-import-log">Nenhuma importação em lote executada nesta sessão.</div>
             </div>
-            <div class="meta-import-log muted-text" id="meta-import-log">Nenhuma importação em lote executada nesta sessão.</div>
-          </section>
-        </section>
-      </section>
-
-      <section class="scaled-offers-shell module-shell module-shell-library motion-assemble reveal-ready" data-assemble data-assemble-group="right" data-reveal data-depth="5">
-        <article class="hero-panel hero-panel-main scaled-module-head module-hero-panel motion-parallax" data-depth="7">
-          <div class="hero-copy">
-            <p class="section-kicker">Biblioteca Meta</p>
-            <h2>Veja uma biblioteca própria de anúncios Meta, independente do cadastro manual do topo.</h2>
-            <p>
-              Este módulo lê uma base própria da biblioteca, com importação separada e carregamento automático.
-              O radar/cadastro manual do topo não alimenta esta área.
-            </p>
           </div>
-          <div class="hero-metrics">
-            <div class="hero-metric-card glass-card">
+        </div>
+      </div>
+
+      <!-- ══ MÓDULO: BIBLIOTECA META ══ -->
+      <div class="module" id="module-library">
+        <div class="module-hero">
+          <div class="module-hero-copy">
+            <div class="section-kicker">Biblioteca Meta</div>
+            <h2>Biblioteca própria de anúncios Meta, independente do cadastro manual.</h2>
+            <p>Este módulo lê uma base própria da biblioteca, com importação separada. O radar/cadastro manual do topo não alimenta esta área.</p>
+          </div>
+          <div class="module-hero-metrics">
+            <div class="hero-metric">
               <span>Status do conector</span>
               <strong id="scaled-offers-status-text">Aguardando</strong>
             </div>
-            <div class="hero-metric-card accent-card meta-accent-card">
+            <div class="hero-metric accent">
               <span>Anúncios disponíveis</span>
               <strong id="scaled-offers-counter-hero">0</strong>
             </div>
-            <div class="hero-metric-card glass-card">
-              <span>Biblioteca</span>
-              <strong id="scaled-offers-query-label">Biblioteca Meta</strong>
-            </div>
           </div>
-        </article>
+        </div>
 
-        <section class="offers-panel scaled-search-panel reveal-ready motion-parallax" data-reveal data-depth="6">
-          <div class="section-head compact">
-            <div>
-              <p class="section-kicker">Atualização da biblioteca</p>
-              <h3>Operações da biblioteca</h3>
-            </div>
-            <div class="meta-command-actions">
-              <button class="ghost-btn" id="btn-open-scaled-import" type="button">Importar biblioteca</button>
-              <button class="ghost-btn" id="btn-run-scaled-collector" type="button">Rodar coleta</button>
-              <button class="primary-btn" id="btn-refresh-scaled-offers" type="button">Atualizar biblioteca</button>
-            </div>
+        <div class="command-bar">
+          <div class="command-bar-info">
+            <h3>Operações da biblioteca</h3>
+            <p>Importe ou atualize a base independente de anúncios.</p>
           </div>
-          <div class="offer-subline scaled-search-meta">
-            <span id="scaled-offers-status" class="status-pill">Carregando biblioteca</span>
-            <span id="scaled-offers-counter" class="muted-text">0 anúncios</span>
+          <div class="command-bar-actions">
+            <button class="btn btn-ghost" id="btn-open-scaled-import">↑ Importar biblioteca</button>
+            <button class="btn btn-ghost" id="btn-run-scaled-collector">▶ Rodar coleta</button>
+            <button class="btn btn-primary" id="btn-refresh-scaled-offers">↺ Atualizar</button>
           </div>
-          <p class="helper-text" id="scaled-offers-message">Carregando a biblioteca independente de anúncios Meta.</p>
-        </section>
+        </div>
 
-        <section class="offers-panel scaled-results-panel reveal-ready motion-parallax" data-reveal data-depth="8">
-          <div class="section-head">
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-head">
             <div>
-              <p class="section-kicker">Biblioteca independente</p>
-              <h3>Biblioteca do momento</h3>
+              <div class="section-kicker">Atualização da biblioteca</div>
+              <span style="font-weight:600;font-size:.85rem;color:var(--text);">Status</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <span id="scaled-offers-status" class="pill pill-loading">Carregando</span>
+              <span id="scaled-offers-counter" style="font-size:.75rem;color:var(--text-3);">0 anúncios</span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <p class="helper-text" id="scaled-offers-message">Carregando a biblioteca independente de anúncios Meta.</p>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <div>
+              <div class="section-kicker">Biblioteca independente</div>
+              <div class="section-title">Biblioteca do momento</div>
             </div>
           </div>
           <div id="scaled-offers-results" class="scaled-results-grid">
-            <div class="scaled-empty-state">Carregando biblioteca...</div>
+            <div class="scaled-empty">Carregando biblioteca...</div>
           </div>
-        </section>
-      </section>
+        </div>
 
-      <section class="content-grid meta-bottom-grid">
-        <section class="offers-panel meta-import-promo meta-elevated-panel">
-          <div class="section-head compact">
-            <div>
-              <p class="section-kicker">Importação própria</p>
-              <h3>Abasteça a biblioteca inferior</h3>
+        <div class="import-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="section-kicker">Importação própria</div>
+                <span style="font-weight:600;font-size:.85rem;color:var(--text);">Formato JSON</span>
+              </div>
+              <button class="btn btn-ghost btn-sm" id="btn-open-scaled-import-inline">Abrir importador</button>
             </div>
-            <button class="ghost-btn" id="btn-open-scaled-import-inline">Abrir importador</button>
-          </div>
-          <p class="muted-text">Use este importador para popular a biblioteca de baixo sem depender do radar/cadastro manual do topo.</p>
-          <div class="meta-json-preview">
-            <pre id="scaled-import-preview">[
+            <div class="panel-body">
+              <div class="code-block" id="scaled-import-preview">[
   {
     "offerTitle": "...",
     "brandName": "...",
@@ -391,248 +1330,236 @@
     "creativeUrl": "https://...",
     "adsCount": 200
   }
-]</pre>
-          </div>
-        </section>
-        <section class="offers-panel meta-import-feedback meta-elevated-panel">
-          <div class="section-head compact">
-            <div>
-              <p class="section-kicker">Resumo operacional</p>
-              <h3>Resultado da última importação</h3>
+]</div>
             </div>
           </div>
-          <div class="meta-import-stats" id="scaled-import-stats">
-            <div class="meta-stat-box"><span>Importados</span><strong id="scaled-imported-count">0</strong></div>
-            <div class="meta-stat-box"><span>Ignorados</span><strong id="scaled-skipped-count">0</strong></div>
-            <div class="meta-stat-box"><span>Erros</span><strong id="scaled-error-count">0</strong></div>
-          </div>
-          <div class="meta-import-log muted-text" id="scaled-import-log">Nenhuma importação executada nesta sessão.</div>
-        </section>
-      </section>
-
-      <section class="filters-panel reveal-ready motion-parallax" data-reveal data-depth="5">
-        <div class="section-head compact">
-          <div>
-            <p class="section-kicker">Filtragem</p>
-            <h3>Refine o radar</h3>
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="section-kicker">Resumo operacional</div>
+                <span style="font-weight:600;font-size:.85rem;color:var(--text);">Última importação</span>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="import-stat-boxes">
+                <div class="import-stat"><span>Importados</span><strong id="scaled-imported-count">0</strong></div>
+                <div class="import-stat"><span>Ignorados</span><strong id="scaled-skipped-count">0</strong></div>
+                <div class="import-stat"><span>Erros</span><strong id="scaled-error-count">0</strong></div>
+              </div>
+              <div class="import-log" id="scaled-import-log">Nenhuma importação executada nesta sessão.</div>
+            </div>
           </div>
         </div>
-        <div class="filters-grid">
-          <label class="field-wrap">
+      </div>
+
+      <!-- ══ MÓDULO: OFERTAS ══ -->
+      <div class="module" id="module-offers">
+        <div class="filters-bar">
+          <div class="field-wrap" style="min-width:200px;flex:2">
             <span>Busca</span>
             <input id="filter-search" type="text" placeholder="Nome, promessa, mecanismo...">
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap">
             <span>Nicho</span>
             <select id="filter-niche"><option value="">Todos</option></select>
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap">
             <span>Plataforma</span>
             <select id="filter-platform"><option value="">Todas</option></select>
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap">
             <span>Micropersona</span>
             <select id="filter-micropersona"><option value="">Todas</option></select>
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap">
             <span>Tag</span>
             <select id="filter-tag"><option value="">Todas</option></select>
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap" style="min-width:100px">
             <span>Score mínimo</span>
-            <input id="filter-min-score" type="number" min="0" max="100" step="1" placeholder="0">
-          </label>
+            <input id="filter-min-score" type="number" min="0" max="100" placeholder="0">
+          </div>
         </div>
-      </section>
 
-      <section class="content-grid reveal-ready" data-reveal data-depth="4">
-        <section class="offers-panel motion-parallax" data-depth="8">
-          <div class="section-head">
-            <div>
-              <p class="section-kicker">Banco de ofertas</p>
-              <h3>Ofertas classificadas</h3>
+        <div class="grid-content">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="section-kicker">Banco de ofertas</div>
+                <span style="font-weight:600;font-size:.88rem;color:var(--text);">Ofertas classificadas</span>
+              </div>
+              <span class="pill pill-gold" id="offers-counter">0 ofertas</span>
             </div>
-            <div class="offers-head-actions">
-              <span class="muted-text" id="offers-counter">0 ofertas</span>
-            </div>
-          </div>
-          <div class="table-shell">
-            <table>
-              <thead>
-                <tr>
-                  <th>Oferta</th>
-                  <th>Mecanismo</th>
-                  <th>Avatar</th>
-                  <th>Origem</th>
-                  <th>Ticket</th>
-                  <th>Score</th>
-                  <th></th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="offers-body">
-                <tr><td colspan="7" class="empty-row">Carregando ofertas...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <aside class="insights-panel motion-parallax" data-depth="10">
-          <div class="section-head compact">
-            <div>
-              <p class="section-kicker">Tendências</p>
-              <h3>O que mais aparece</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Oferta</th>
+                    <th>Mecanismo</th>
+                    <th>Avatar</th>
+                    <th>Origem</th>
+                    <th>Ticket</th>
+                    <th>Score</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="offers-body">
+                  <tr><td colspan="7" class="empty-row">Carregando ofertas...</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <div class="ranking-block">
-            <h4>Mecanismos dominantes</h4>
-            <div id="ranking-mechanisms" class="ranking-list"></div>
+          <div>
+            <div class="panel">
+              <div class="panel-body">
+                <div class="ranking-block">
+                  <h4>Mecanismos dominantes</h4>
+                  <div id="ranking-mechanisms-offers" class="ranking-list"></div>
+                </div>
+                <div class="gold-divider"></div>
+                <div class="ranking-block">
+                  <h4>Micropersonas</h4>
+                  <div id="ranking-micropersonas" class="ranking-list"></div>
+                </div>
+                <div class="ranking-block">
+                  <h4>Plataformas</h4>
+                  <div id="ranking-platforms-offers" class="ranking-list"></div>
+                </div>
+                <div class="gold-divider"></div>
+                <div class="ranking-block">
+                  <h4>Tags quentes</h4>
+                  <div id="ranking-tags-offers" class="tag-cloud"></div>
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
+      </div>
 
-          <div class="ranking-block">
-            <h4>Micropersonas</h4>
-            <div id="ranking-micropersonas" class="ranking-list"></div>
-          </div>
-
-          <div class="ranking-block">
-            <h4>Plataformas</h4>
-            <div id="ranking-platforms" class="ranking-list"></div>
-          </div>
-
-          <div class="ranking-block">
-            <h4>Tags quentes</h4>
-            <div id="ranking-tags" class="tag-cloud"></div>
-          </div>
-        </aside>
-      </section>
-    </main>
+    </div>
   </div>
+</div>
 
-  <div class="drawer-backdrop" id="drawer-backdrop"></div>
-  <section class="drawer" id="offer-drawer" aria-hidden="true">
-    <div class="drawer-header">
-      <div>
-        <p class="section-kicker">Dossiê completo</p>
-        <h3 id="detail-name">Oferta</h3>
-      </div>
-      <button class="icon-btn" id="detail-close" aria-label="Fechar detalhe">×</button>
+<!-- ══ DRAWERS ══ -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<section class="drawer" id="offer-drawer">
+  <div class="drawer-header">
+    <div>
+      <div class="section-kicker">Dossiê completo</div>
+      <h3 id="detail-name">Oferta</h3>
     </div>
-    <div class="drawer-content" id="detail-content"></div>
-  </section>
+    <button class="icon-btn" id="detail-close" aria-label="Fechar">×</button>
+  </div>
+  <div class="drawer-content" id="detail-content"></div>
+</section>
 
-  <div class="drawer-backdrop" id="meta-drawer-backdrop"></div>
-  <section class="drawer meta-drawer" id="meta-drawer" aria-hidden="true">
-    <div class="drawer-header">
-      <div>
-        <p class="section-kicker">Meta Ads Radar</p>
-        <h3 id="meta-detail-name">Anúncio</h3>
-      </div>
-      <button class="icon-btn" id="meta-detail-close" aria-label="Fechar detalhe Meta">×</button>
+<div class="drawer-backdrop" id="meta-drawer-backdrop"></div>
+<section class="drawer" id="meta-drawer">
+  <div class="drawer-header">
+    <div>
+      <div class="section-kicker">Meta Ads Radar</div>
+      <h3 id="meta-detail-name">Anúncio</h3>
     </div>
-    <div class="drawer-content" id="meta-detail-content"></div>
-  </section>
+    <button class="icon-btn" id="meta-detail-close" aria-label="Fechar">×</button>
+  </div>
+  <div class="drawer-content" id="meta-detail-content"></div>
+</section>
 
-  <div class="modal" id="offer-modal" aria-hidden="true">
-    <div class="modal-card">
-      <div class="modal-header">
-        <div>
-          <p class="section-kicker">Cadastro</p>
-          <h3 id="modal-title">Nova oferta</h3>
-        </div>
-        <button class="icon-btn" id="modal-close" aria-label="Fechar formulário">×</button>
+<!-- ══ MODAL: NOVA OFERTA ══ -->
+<div class="modal-overlay" id="offer-modal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <div class="section-kicker">Cadastro</div>
+        <h3 id="modal-title">Nova oferta</h3>
       </div>
-
-      <form id="offer-form" class="offer-form">
-        <div class="form-grid two-col">
-          <label class="field-wrap">
+      <button class="icon-btn" id="modal-close" aria-label="Fechar">×</button>
+    </div>
+    <form id="offer-form">
+      <div class="modal-body">
+        <div class="grid-2">
+          <div class="field-wrap">
             <span>Nome da oferta *</span>
             <input name="name" required>
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap">
             <span>Nicho *</span>
             <input name="niche" required placeholder="Ex: Emagrecimento">
-          </label>
+          </div>
         </div>
-
-        <div class="form-grid two-col">
-          <label class="field-wrap">
+        <div class="grid-2">
+          <div class="field-wrap">
             <span>Micropersona</span>
             <input name="micropersona" placeholder="Ex: Mulheres 35+ com rotina corrida">
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap">
             <span>Tipo de oferta</span>
             <input name="offerType" placeholder="Ex: Protocolo, Desafio, VSL">
-          </label>
+          </div>
         </div>
-
-        <label class="field-wrap">
+        <div class="field-wrap">
           <span>Mecanismo *</span>
           <input name="mechanism" required placeholder="Ex: Rotina anti-inchaço com comida normal">
-        </label>
-
-        <label class="field-wrap">
+        </div>
+        <div class="field-wrap">
           <span>Promessa *</span>
           <textarea name="promise" rows="2" required placeholder="Ex: Reduzir medidas em 14 dias sem academia"></textarea>
-        </label>
-
-        <div class="form-grid three-col">
-          <label class="field-wrap">
+        </div>
+        <div class="grid-3">
+          <div class="field-wrap">
             <span>Plataforma *</span>
             <input name="sourcePlatform" required placeholder="Ex: Meta Ads">
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap">
             <span>Ticket de entrada</span>
             <input name="entryPrice" type="number" step="0.01" min="0" placeholder="27.00">
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap">
             <span>Funil</span>
             <input name="funnelType" placeholder="Ex: VSL + upsell">
-          </label>
+          </div>
         </div>
-
         <div class="url-block">
           <div class="url-head">
             <h4>URLs públicas</h4>
-            <button type="button" class="ghost-btn small" id="btn-enrich-url">Enriquecer URL principal</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-enrich-url">Enriquecer URL</button>
           </div>
-          <div class="form-grid three-col">
-            <label class="field-wrap">
+          <div class="grid-3">
+            <div class="field-wrap">
               <span>URL da origem</span>
               <input name="sourceUrl" type="url" placeholder="https://...">
-            </label>
-            <label class="field-wrap">
+            </div>
+            <div class="field-wrap">
               <span>Landing page</span>
               <input name="landingPageUrl" type="url" placeholder="https://...">
-            </label>
-            <label class="field-wrap">
+            </div>
+            <div class="field-wrap">
               <span>URL do criativo</span>
               <input name="creativeUrl" type="url" placeholder="https://...">
-            </label>
+            </div>
           </div>
-          <p class="helper-text" id="enrich-feedback">Use links públicos para guardar referência ou puxar metadados básicos.</p>
+          <p class="helper-text" id="enrich-feedback">Use links públicos para referência ou puxar metadados básicos.</p>
         </div>
-
-        <div class="form-grid two-col">
-          <label class="field-wrap">
+        <div class="grid-2">
+          <div class="field-wrap">
             <span>Tags</span>
             <input name="tags" placeholder="Separe por vírgulas">
-          </label>
-          <label class="field-wrap">
-            <span>Observações de modelagem</span>
-            <input name="modelNotes" placeholder="Como adaptar sem copiar literalmente">
-          </label>
+          </div>
+          <div class="field-wrap">
+            <span>Notas de modelagem</span>
+            <input name="modelNotes" placeholder="Como adaptar sem copiar">
+          </div>
+        </div>
+        <div class="field-wrap">
+          <span>Notas</span>
+          <textarea name="notes" rows="2" placeholder="O que chamou atenção nessa oferta?"></textarea>
         </div>
 
-        <label class="field-wrap">
-          <span>Notas</span>
-          <textarea name="notes" rows="3" placeholder="O que chamou atenção nessa oferta?"></textarea>
-        </label>
-
-        <section class="signals-section">
+        <div class="signals-section">
           <div class="signals-header">
             <div>
-              <p class="section-kicker">Sinais de escala</p>
+              <div class="section-kicker">Sinais de escala</div>
               <h4>Score transparente</h4>
             </div>
             <div class="score-preview">
@@ -640,7 +1567,6 @@
               <strong id="score-preview-value">0</strong>
             </div>
           </div>
-
           <div class="signals-grid">
             <label class="field-wrap signal-field">
               <span>Repetição do anúncio</span>
@@ -678,152 +1604,140 @@
               <strong data-signal-value="funnelStrength">0</strong>
             </label>
           </div>
-        </section>
-
-        <div class="modal-actions">
-          <button type="button" class="ghost-btn" id="btn-delete-offer" hidden>Excluir</button>
-          <div class="modal-actions-right">
-            <button type="button" class="ghost-btn" id="btn-cancel-offer">Cancelar</button>
-            <button type="submit" class="primary-btn" id="btn-save-offer">Salvar oferta</button>
-          </div>
         </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="modal" id="meta-modal" aria-hidden="true">
-    <div class="modal-card">
-      <div class="modal-header">
-        <div>
-          <p class="section-kicker">Meta Ads Radar</p>
-          <h3 id="meta-modal-title">Novo anúncio Meta</h3>
-        </div>
-        <button class="icon-btn" id="meta-modal-close" aria-label="Fechar formulário Meta">×</button>
       </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" id="btn-delete-offer" hidden>Excluir</button>
+        <div class="modal-footer-right">
+          <button type="button" class="btn btn-ghost" id="btn-cancel-offer">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-offer">Salvar oferta</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
 
-      <form id="meta-form" class="offer-form">
-        <div class="form-grid two-col">
-          <label class="field-wrap">
+<!-- ══ MODAL: META AD ══ -->
+<div class="modal-overlay" id="meta-modal">
+  <div class="modal-card wide">
+    <div class="modal-header">
+      <div>
+        <div class="section-kicker">Meta Ads Radar</div>
+        <h3 id="meta-modal-title">Novo anúncio Meta</h3>
+      </div>
+      <button class="icon-btn" id="meta-modal-close" aria-label="Fechar">×</button>
+    </div>
+    <form id="meta-form">
+      <div class="modal-body">
+        <div class="grid-2">
+          <div class="field-wrap">
             <span>Título do anúncio *</span>
             <input name="adTitle" required>
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap">
             <span>Marca *</span>
             <input name="brandName" required placeholder="Ex: VitalForge">
-          </label>
+          </div>
         </div>
-
-        <div class="form-grid two-col">
-          <label class="field-wrap">
+        <div class="grid-2">
+          <div class="field-wrap">
             <span>Nicho *</span>
             <input name="niche" required placeholder="Ex: Suplementos">
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap">
             <span>Tipo de oferta</span>
             <input name="offerType" placeholder="Ex: Produto físico, Protocolo, Digital">
-          </label>
+          </div>
         </div>
-
-        <div class="form-grid two-col">
-          <label class="field-wrap">
+        <div class="grid-2">
+          <div class="field-wrap">
             <span>Micropersona</span>
             <input name="micropersona" placeholder="Ex: Mulheres 28-45 com foco em pele">
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap">
             <span>CTA</span>
             <input name="cta" placeholder="Ex: Comprar agora">
-          </label>
+          </div>
         </div>
-
-        <label class="field-wrap">
+        <div class="field-wrap">
           <span>Hook da copy</span>
           <input name="copyHook" placeholder="A primeira frase que chama atenção no anúncio">
-        </label>
-
-        <label class="field-wrap">
+        </div>
+        <div class="field-wrap">
           <span>Mecanismo</span>
-          <input name="mechanism" placeholder="Ex: Protocolo guiado, rotina simples, solução específica">
-        </label>
-
-        <label class="field-wrap">
+          <input name="mechanism" placeholder="Ex: Protocolo guiado, rotina simples">
+        </div>
+        <div class="field-wrap">
           <span>Promessa *</span>
           <textarea name="promise" rows="2" required placeholder="Ex: Melhorar o viço da pele em 21 dias sem rotina complexa"></textarea>
-        </label>
-
+        </div>
         <div class="url-block">
           <div class="url-head">
             <h4>Links públicos</h4>
-            <button type="button" class="ghost-btn small" id="btn-meta-enrich-url">Enriquecer URL</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-meta-enrich-url">Enriquecer URL</button>
           </div>
-          <div class="form-grid three-col">
-            <label class="field-wrap">
+          <div class="grid-3">
+            <div class="field-wrap">
               <span>URL da Ad Library *</span>
               <input name="adLibraryUrl" type="url" required placeholder="https://www.facebook.com/ads/library/...">
-            </label>
-            <label class="field-wrap">
+            </div>
+            <div class="field-wrap">
               <span>Landing page</span>
               <input name="landingPageUrl" type="url" placeholder="https://...">
-            </label>
-            <label class="field-wrap">
+            </div>
+            <div class="field-wrap">
               <span>URL do criativo</span>
               <input name="creativeUrl" type="url" placeholder="https://...">
-            </label>
+            </div>
           </div>
-          <p class="helper-text" id="meta-enrich-feedback">Cole o link da Ad Library e complete manualmente os sinais observáveis.</p>
+          <p class="helper-text" id="meta-enrich-feedback">Cole o link da Ad Library e complete os sinais manualmente.</p>
         </div>
-
-        <div class="form-grid three-col">
-          <label class="field-wrap">
+        <div class="grid-3">
+          <div class="field-wrap">
             <span>Tipo de criativo</span>
             <select name="creativeType">
               <option value="">Selecione</option>
-              <option value="Vídeo">Vídeo</option>
-              <option value="Imagem">Imagem</option>
-              <option value="Carousel">Carousel</option>
-              <option value="UGC">UGC</option>
+              <option>Vídeo</option><option>Imagem</option><option>Carousel</option><option>UGC</option>
             </select>
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap">
             <span>Qtd. criativos</span>
-            <input name="creativeCount" type="number" min="0" step="1" placeholder="Ex: 4">
-          </label>
-          <label class="field-wrap">
+            <input name="creativeCount" type="number" min="0" placeholder="Ex: 4">
+          </div>
+          <div class="field-wrap">
             <span>Dias rodando</span>
-            <input name="daysRunning" type="number" min="0" step="1" placeholder="Opcional">
-          </label>
+            <input name="daysRunning" type="number" min="0" placeholder="Opcional">
+          </div>
         </div>
-
-        <div class="form-grid two-col">
-          <label class="field-wrap">
+        <div class="grid-2">
+          <div class="field-wrap">
             <span>Primeira observação</span>
             <input name="firstSeenAt" type="date">
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap">
             <span>Última observação</span>
             <input name="lastSeenAt" type="date">
-          </label>
+          </div>
         </div>
-
-        <div class="form-grid two-col">
-          <label class="field-wrap">
+        <div class="grid-2">
+          <div class="field-wrap">
             <span>Tags</span>
             <input name="tags" placeholder="Separe por vírgulas">
-          </label>
-          <label class="field-wrap">
+          </div>
+          <div class="field-wrap">
             <span>Notas do formato</span>
-            <input name="adFormatNotes" placeholder="Ex: vídeo curto, antes/depois indireto, oferta em destaque">
-          </label>
+            <input name="adFormatNotes" placeholder="Ex: vídeo curto, antes/depois indireto">
+          </div>
+        </div>
+        <div class="field-wrap">
+          <span>Notas</span>
+          <textarea name="notes" rows="2" placeholder="O que faz esse anúncio parecer forte agora?"></textarea>
         </div>
 
-        <label class="field-wrap">
-          <span>Notas</span>
-          <textarea name="notes" rows="3" placeholder="O que faz esse anúncio parecer forte agora?"></textarea>
-        </label>
-
-        <section class="signals-section meta-signals-section">
+        <div class="signals-section">
           <div class="signals-header">
             <div>
-              <p class="section-kicker">Sinais públicos de escala</p>
+              <div class="section-kicker">Sinais públicos de escala</div>
               <h4>Meta score transparente</h4>
             </div>
             <div class="score-preview">
@@ -831,7 +1745,6 @@
               <strong id="meta-score-preview-value">0</strong>
             </div>
           </div>
-
           <div class="signals-grid">
             <label class="field-wrap signal-field">
               <span>Recorrência / continuidade</span>
@@ -874,37 +1787,37 @@
               <strong data-meta-signal-value="micropersonaFit">0</strong>
             </label>
           </div>
-        </section>
-
-        <div class="modal-actions">
-          <button type="button" class="ghost-btn" id="btn-delete-meta-ad" hidden>Excluir</button>
-          <div class="modal-actions-right">
-            <button type="button" class="ghost-btn" id="btn-cancel-meta-ad">Cancelar</button>
-            <button type="submit" class="primary-btn" id="btn-save-meta-ad">Salvar anúncio Meta</button>
-          </div>
         </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="modal" id="meta-import-modal" aria-hidden="true">
-    <div class="modal-card meta-import-modal-card">
-      <div class="modal-header">
-        <div>
-          <p class="section-kicker">Importação em lote</p>
-          <h3>Subir vários anúncios Meta por JSON</h3>
-        </div>
-        <button class="icon-btn" id="meta-import-modal-close" aria-label="Fechar importação em lote">×</button>
       </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" id="btn-delete-meta-ad" hidden>Excluir</button>
+        <div class="modal-footer-right">
+          <button type="button" class="btn btn-ghost" id="btn-cancel-meta-ad">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-meta-ad">Salvar anúncio Meta</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
 
-      <div class="offer-form">
-        <div class="meta-import-layout">
-          <section class="url-block meta-import-editor">
-            <div class="url-head">
-              <h4>JSON de entrada</h4>
-              <button type="button" class="ghost-btn small" id="btn-fill-meta-import-example">Usar exemplo</button>
-            </div>
-            <textarea id="meta-import-input" rows="18" class="meta-import-textarea" placeholder='[
+<!-- ══ MODAL: IMPORTAÇÃO META ══ -->
+<div class="modal-overlay" id="meta-import-modal">
+  <div class="modal-card wide">
+    <div class="modal-header">
+      <div>
+        <div class="section-kicker">Importação em lote</div>
+        <h3>Subir vários anúncios Meta por JSON</h3>
+      </div>
+      <button class="icon-btn" id="meta-import-modal-close" aria-label="Fechar">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="import-layout">
+        <div>
+          <div class="url-head" style="margin-bottom:8px;">
+            <h4>JSON de entrada</h4>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-fill-meta-import-example">Usar exemplo</button>
+          </div>
+          <textarea id="meta-import-input" class="field-wrap import-textarea" rows="14" placeholder='[
   {
     "adTitle": "...",
     "brandName": "...",
@@ -913,59 +1826,52 @@
     "adLibraryUrl": "https://..."
   }
 ]'></textarea>
-            <p class="helper-text">Cole um array JSON. Campos mínimos: <code>adTitle</code>, <code>brandName</code>, <code>niche</code>, <code>promise</code>, <code>adLibraryUrl</code>.</p>
-          </section>
-
-          <section class="signals-section meta-import-sidecar">
-            <div class="signals-header">
-              <div>
-                <p class="section-kicker">Formato recomendado</p>
-                <h4>Modelo base</h4>
-              </div>
-            </div>
-            <div class="meta-json-preview compact-preview">
-              <pre id="meta-import-example">[
+          <p class="helper-text">Campos mínimos: <code>adTitle</code>, <code>brandName</code>, <code>niche</code>, <code>promise</code>, <code>adLibraryUrl</code>.</p>
+        </div>
+        <div>
+          <div class="section-kicker" style="margin-bottom:6px;">Formato recomendado</div>
+          <h4 style="font-size:.85rem;margin-bottom:8px;color:var(--text);">Modelo base</h4>
+          <div class="code-block"><pre id="meta-import-example">[
   {
     "adTitle": "Creatina Clean Performance",
     "brandName": "VitalForge",
     "niche": "Suplementos",
-    "promise": "Ganhar força e consistência sem complicar a suplementação",
+    "promise": "Ganhar força sem complicar",
     "adLibraryUrl": "https://www.facebook.com/ads/library/"
   }
-]</pre>
-            </div>
-            <div class="meta-import-result" id="meta-import-result">Cole seu JSON e rode a importação. Duplicatas por URL da Ad Library serão ignoradas.</div>
-          </section>
-        </div>
-
-        <div class="modal-actions">
-          <div class="modal-actions-right">
-            <button type="button" class="ghost-btn" id="btn-cancel-meta-import">Cancelar</button>
-            <button type="button" class="primary-btn" id="btn-run-meta-import">Importar JSON</button>
-          </div>
+]</pre></div>
+          <div class="import-result" id="meta-import-result" style="margin-top:10px;">Cole seu JSON e rode a importação. Duplicatas por URL serão ignoradas.</div>
         </div>
       </div>
     </div>
-  </div>
-
-  <div class="modal" id="scaled-import-modal" aria-hidden="true">
-    <div class="modal-card meta-import-modal-card">
-      <div class="modal-header">
-        <div>
-          <p class="section-kicker">Importação própria</p>
-          <h3>Subir anúncios na biblioteca inferior</h3>
-        </div>
-        <button class="icon-btn" id="scaled-import-modal-close" aria-label="Fechar importação da biblioteca">×</button>
+    <div class="modal-footer">
+      <div></div>
+      <div class="modal-footer-right">
+        <button type="button" class="btn btn-ghost" id="btn-cancel-meta-import">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btn-run-meta-import">↑ Importar JSON</button>
       </div>
+    </div>
+  </div>
+</div>
 
-      <div class="offer-form">
-        <div class="meta-import-layout">
-          <section class="url-block meta-import-editor">
-            <div class="url-head">
-              <h4>JSON da biblioteca</h4>
-              <button type="button" class="ghost-btn small" id="btn-fill-scaled-import-example">Usar exemplo</button>
-            </div>
-            <textarea id="scaled-import-input" rows="18" class="meta-import-textarea" placeholder='[
+<!-- ══ MODAL: IMPORTAÇÃO BIBLIOTECA ══ -->
+<div class="modal-overlay" id="scaled-import-modal">
+  <div class="modal-card wide">
+    <div class="modal-header">
+      <div>
+        <div class="section-kicker">Importação própria</div>
+        <h3>Subir anúncios na biblioteca</h3>
+      </div>
+      <button class="icon-btn" id="scaled-import-modal-close" aria-label="Fechar">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="import-layout">
+        <div>
+          <div class="url-head" style="margin-bottom:8px;">
+            <h4>JSON da biblioteca</h4>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-fill-scaled-import-example">Usar exemplo</button>
+          </div>
+          <textarea id="scaled-import-input" class="field-wrap import-textarea" rows="14" placeholder='[
   {
     "offerTitle": "...",
     "brandName": "...",
@@ -974,18 +1880,12 @@
     "adsCount": 200
   }
 ]'></textarea>
-            <p class="helper-text">Campos mínimos: <code>offerTitle</code>, <code>brandName</code>, <code>libraryUrl</code> e <code>adsCount</code> >= 200.</p>
-          </section>
-
-          <section class="signals-section meta-import-sidecar">
-            <div class="signals-header">
-              <div>
-                <p class="section-kicker">Formato recomendado</p>
-                <h4>Modelo base</h4>
-              </div>
-            </div>
-            <div class="meta-json-preview compact-preview">
-              <pre id="scaled-import-example">[
+          <p class="helper-text">Campos mínimos: <code>offerTitle</code>, <code>brandName</code>, <code>libraryUrl</code> e <code>adsCount</code> >= 200.</p>
+        </div>
+        <div>
+          <div class="section-kicker" style="margin-bottom:6px;">Formato recomendado</div>
+          <h4 style="font-size:.85rem;margin-bottom:8px;color:var(--text);">Modelo base</h4>
+          <div class="code-block"><pre id="scaled-import-example">[
   {
     "offerTitle": "Creatina Clean Performance",
     "brandName": "VitalForge",
@@ -993,24 +1893,98 @@
     "creativeUrl": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=80",
     "adsCount": 334
   }
-]</pre>
-            </div>
-            <div class="meta-import-result" id="scaled-import-result">Cole seu JSON e rode a importação para abastecer a biblioteca independente.</div>
-          </section>
-        </div>
-
-        <div class="modal-actions">
-          <div class="modal-actions-right">
-            <button type="button" class="ghost-btn" id="btn-cancel-scaled-import">Cancelar</button>
-            <button type="button" class="primary-btn" id="btn-run-scaled-import">Importar biblioteca</button>
-          </div>
+]</pre></div>
+          <div class="import-result" id="scaled-import-result" style="margin-top:10px;">Cole seu JSON e rode a importação para abastecer a biblioteca.</div>
         </div>
       </div>
     </div>
+    <div class="modal-footer">
+      <div></div>
+      <div class="modal-footer-right">
+        <button type="button" class="btn btn-ghost" id="btn-cancel-scaled-import">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btn-run-scaled-import">↑ Importar biblioteca</button>
+      </div>
+    </div>
   </div>
+</div>
 
-  <div class="notifications" id="notifications"></div>
+<!-- NOTIFICATIONS -->
+<div class="notifications" id="notifications"></div>
 
-  <script src="app.js"></script>
+<script>
+  const moduleNames = {
+    overview: 'Visão Geral',
+    meta: 'Meta Ads Radar',
+    library: 'Biblioteca Meta',
+    offers: 'Ofertas'
+  };
+
+  function switchModule(id, btn) {
+    document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+    document.getElementById('module-' + id).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('topbar-title').textContent = moduleNames[id] || id;
+  }
+
+  function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) { el.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  }
+  function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('open'); document.body.style.overflow = ''; }
+  }
+
+  document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+  });
+
+  function openDrawer(id, backdropId) {
+    document.getElementById(id).classList.add('open');
+    document.getElementById(backdropId).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer(id, backdropId) {
+    document.getElementById(id).classList.remove('open');
+    document.getElementById(backdropId).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('detail-close').addEventListener('click', () => closeDrawer('offer-drawer','drawer-backdrop'));
+  document.getElementById('drawer-backdrop').addEventListener('click', () => closeDrawer('offer-drawer','drawer-backdrop'));
+  document.getElementById('meta-detail-close').addEventListener('click', () => closeDrawer('meta-drawer','meta-drawer-backdrop'));
+  document.getElementById('meta-drawer-backdrop').addEventListener('click', () => closeDrawer('meta-drawer','meta-drawer-backdrop'));
+
+  ['modal-close','btn-cancel-offer'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => closeModal('offer-modal'));
+  });
+  ['meta-modal-close','btn-cancel-meta-ad'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => closeModal('meta-modal'));
+  });
+  ['meta-import-modal-close','btn-cancel-meta-import'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => closeModal('meta-import-modal'));
+  });
+  ['scaled-import-modal-close','btn-cancel-scaled-import'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => closeModal('scaled-import-modal'));
+  });
+
+  document.getElementById('btn-new-offer').addEventListener('click', () => openModal('offer-modal'));
+  document.getElementById('btn-new-meta-ad').addEventListener('click', () => openModal('meta-modal'));
+  ['btn-open-meta-import','btn-open-meta-import-inline'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => openModal('meta-import-modal'));
+  });
+  ['btn-open-scaled-import','btn-open-scaled-import-inline'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => openModal('scaled-import-modal'));
+  });
+</script>
+
+<script src="app.js"></script>
 </body>
 </html>
