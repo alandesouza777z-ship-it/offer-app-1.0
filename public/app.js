@@ -1224,7 +1224,7 @@ function renderOffers() {
           </div>
         </td>
         <td>
-          <button type="button" class="funnelby-export-btn" data-action="funnelby" data-id="${offer.id}" title="Enviar para Funnelby">🚀 Funnelby</button>
+          <button type="button" class="funnelby-export-btn" data-action="funnelby" data-id="${offer.id}" title="Enviar para RoiMax Funnels">🚀 RoiMax Funnels</button>
         </td>
       </tr>
     `;
@@ -2174,9 +2174,9 @@ function handleTableClick(event) {
 }
 
 async function exportToFunnelby(offer, button) {
-  const FUNNELBY_API = 'http://localhost:3333';
+  const FUNNELS_APP_URL = 'https://funil-automatico.vercel.app';
   const originalText = button.textContent;
-  button.textContent = '⏳ Enviando...';
+  button.textContent = '⏳ Abrindo...';
   button.disabled = true;
 
   try {
@@ -2197,23 +2197,20 @@ async function exportToFunnelby(offer, button) {
       tags: offer.tags || [],
       notes: offer.notes,
       score: offer.score,
-      signals: offer.signals,
     };
 
-    const res = await fetch(`${FUNNELBY_API}/api/import-offer`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    // Encode offer data as base64 in URL hash
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    const importUrl = `${FUNNELS_APP_URL}/#import=${encoded}`;
 
-    if (!res.ok) throw new Error(`Erro ${res.status}`);
+    // Open the funnels app in a new tab with the data
+    window.open(importUrl, '_blank');
 
-    const result = await res.json();
-    button.textContent = '✅ Enviado!';
+    button.textContent = '✅ Aberto!';
     button.style.background = 'rgba(16,185,129,0.2)';
     button.style.color = '#34d399';
     button.style.borderColor = 'rgba(16,185,129,0.3)';
-    notify(`"${offer.name}" exportada para Funnelby com sucesso! Funil criado: ${result.funnelName}`, 'success');
+    notify(`"${offer.name}" enviada para o RoiMax Funnels! A aba foi aberta com o funil.`, 'success');
 
     setTimeout(() => {
       button.textContent = originalText;
@@ -2226,7 +2223,7 @@ async function exportToFunnelby(offer, button) {
     button.textContent = '❌ Erro';
     button.style.background = 'rgba(239,68,68,0.2)';
     button.style.color = '#f87171';
-    notify(`Erro ao enviar para Funnelby: ${err.message}. Certifique-se que o Funnelby está rodando (localhost:3333).`, 'error');
+    notify(`Erro ao abrir RoiMax Funnels: ${err.message}`, 'error');
 
     setTimeout(() => {
       button.textContent = originalText;
