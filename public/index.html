@@ -1924,7 +1924,8 @@
     document.getElementById('module-' + id).classList.add('active');
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById('topbar-title').textContent = moduleNames[id] || id;
+    const titleEl = document.getElementById('topbar-title');
+    if (titleEl) titleEl.textContent = moduleNames[id] || id;
   }
 
   function openModal(id) {

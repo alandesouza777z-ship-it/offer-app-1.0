@@ -1,5 +1,10 @@
 const API_BASE = window.location.origin;
 
+// Safe DOM helpers — prevent crash when element is missing
+function $(id) { return document.getElementById(id); }
+function setText(id, text) { const el = $(id); if (el) el.textContent = text; }
+function safeOn(id, event, handler) { const el = $(id); if (el) el.addEventListener(event, handler); }
+
 const META_IMPORT_EXAMPLE = `[
   {
     "adTitle": "Creatina Clean Performance",
@@ -897,6 +902,7 @@ function escapeHtml(value = '') {
 
 function notify(message, type = 'info') {
   const container = document.getElementById('notifications');
+  if (!container) return;
   const el = document.createElement('div');
   el.className = `notification ${type}`;
   el.textContent = message;
@@ -1082,14 +1088,14 @@ function renderSummary() {
     topPlatform: null,
   };
 
-  document.getElementById('total-offers').textContent = summary.totalOffers || 0;
-  document.getElementById('average-score').textContent = summary.averageScore || 0;
-  document.getElementById('highest-score').textContent = summary.highestScore || 0;
-  document.getElementById('average-entry-price').textContent = formatCurrency(summary.averageEntryPrice || 0);
+  setText('total-offers', summary.totalOffers || 0);
+  setText('average-score', summary.averageScore || 0);
+  setText('highest-score', summary.highestScore || 0);
+  setText('average-entry-price', formatCurrency(summary.averageEntryPrice || 0));
 
-  document.getElementById('hero-total-offers').textContent = summary.totalOffers || 0;
-  document.getElementById('hero-average-score').textContent = summary.averageScore || 0;
-  document.getElementById('hero-top-platform').textContent = summary.topPlatform?.label || 'Radar vazio';
+  setText('hero-total-offers', summary.totalOffers || 0);
+  setText('hero-average-score', summary.averageScore || 0);
+  setText('hero-top-platform', summary.topPlatform?.label || 'Radar vazio');
 }
 
 function renderMetaSummary() {
@@ -1101,22 +1107,22 @@ function renderMetaSummary() {
     topBrand: null,
   };
 
-  document.getElementById('meta-total-ads').textContent = summary.totalAds || 0;
-  document.getElementById('meta-average-score').textContent = summary.averageMetaScore || 0;
-  document.getElementById('meta-highest-score').textContent = summary.highestMetaScore || 0;
-  document.getElementById('meta-average-creative-count').textContent = summary.averageCreativeCount || 0;
+  setText('meta-total-ads', summary.totalAds || 0);
+  setText('meta-average-score', summary.averageMetaScore || 0);
+  setText('meta-highest-score', summary.highestMetaScore || 0);
+  setText('meta-average-creative-count', summary.averageCreativeCount || 0);
 
-  document.getElementById('meta-hero-total-ads').textContent = summary.totalAds || 0;
-  document.getElementById('meta-hero-average-score').textContent = summary.averageMetaScore || 0;
-  document.getElementById('meta-hero-top-brand').textContent = summary.topBrand?.label || 'Radar vazio';
+  setText('meta-hero-total-ads', summary.totalAds || 0);
+  setText('meta-hero-average-score', summary.averageMetaScore || 0);
+  setText('meta-hero-top-brand', summary.topBrand?.label || 'Radar vazio');
 }
 
 function renderMetaImportStats() {
   const last = state.lastMetaImport;
-  document.getElementById('meta-imported-count').textContent = last?.importedCount || 0;
-  document.getElementById('meta-skipped-count').textContent = last?.skippedCount || 0;
-  document.getElementById('meta-error-count').textContent = last?.errorCount || 0;
-  document.getElementById('meta-import-log').textContent = last?.message || 'Nenhuma importação em lote executada nesta sessão.';
+  setText('meta-imported-count', last?.importedCount || 0);
+  setText('meta-skipped-count', last?.skippedCount || 0);
+  setText('meta-error-count', last?.errorCount || 0);
+  setText('meta-import-log', last?.message || 'Nenhuma importação em lote executada nesta sessão.');
 }
 
 function renderScoreBands(containerId, bands) {
@@ -1186,9 +1192,10 @@ function renderMetaRankings() {
 
 function renderOffers() {
   const offers = getFilteredOffers();
-  const tbody = document.getElementById('offers-body');
-  document.getElementById('offers-counter').textContent = `${offers.length} oferta(s)`;
+  const tbody = $('offers-body');
+  setText('offers-counter', `${offers.length} oferta(s)`);
 
+  if (!tbody) return;
   if (!offers.length) {
     tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Nenhuma oferta corresponde aos filtros atuais.</td></tr>';
     return;
@@ -1226,9 +1233,10 @@ function renderOffers() {
 
 function renderMetaAds() {
   const metaAds = getFilteredMetaAds();
-  const tbody = document.getElementById('meta-ads-body');
-  document.getElementById('meta-ads-counter').textContent = `${metaAds.length} anúncio(s)`;
+  const tbody = $('meta-ads-body');
+  setText('meta-ads-counter', `${metaAds.length} anúncio(s)`);
 
+  if (!tbody) return;
   if (!metaAds.length) {
     tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Nenhum anúncio Meta corresponde aos filtros atuais.</td></tr>';
     return;
@@ -1267,10 +1275,10 @@ function renderMetaAds() {
 
 function renderScaledImportStats() {
   const last = state.lastScaledImport || defaultScaledImportState();
-  document.getElementById('scaled-imported-count').textContent = last.importedCount || 0;
-  document.getElementById('scaled-skipped-count').textContent = last.skippedCount || 0;
-  document.getElementById('scaled-error-count').textContent = last.errorCount || 0;
-  document.getElementById('scaled-import-log').textContent = last.message || 'Nenhuma importação executada nesta sessão.';
+  setText('scaled-imported-count', last.importedCount || 0);
+  setText('scaled-skipped-count', last.skippedCount || 0);
+  setText('scaled-error-count', last.errorCount || 0);
+  setText('scaled-import-log', last.message || 'Nenhuma importação executada nesta sessão.');
 }
 
 async function runScaledCollector() {
@@ -1407,12 +1415,12 @@ function renderScaledOffers() {
         : 'Demonstração';
   const results = document.getElementById('scaled-offers-results');
 
-  document.getElementById('scaled-offers-status-text').textContent = heroStatus;
-  document.getElementById('scaled-offers-counter-hero').textContent = items.length;
-  document.getElementById('scaled-offers-query-label').textContent = state.scaledOffersQuery || 'Biblioteca Meta';
-  document.getElementById('scaled-offers-status').textContent = badgeText;
-  document.getElementById('scaled-offers-counter').textContent = `${items.length} anúncio(s)`;
-  document.getElementById('scaled-offers-message').textContent = state.scaledOffersMessage;
+  setText('scaled-offers-status-text', heroStatus);
+  setText('scaled-offers-counter-hero', items.length);
+  setText('scaled-offers-query-label', state.scaledOffersQuery || 'Biblioteca Meta');
+  setText('scaled-offers-status', badgeText);
+  setText('scaled-offers-counter', `${items.length} anúncio(s)`);
+  setText('scaled-offers-message', state.scaledOffersMessage);
 
   if (!items.length) {
     results.innerHTML = '<div class="scaled-empty-state">Nenhum anúncio foi encontrado na biblioteca independente agora.</div>';
@@ -2124,6 +2132,7 @@ async function enrichMetaFromUrl() {
 function bindFilterHandlers(bindings, targetState, renderFn) {
   bindings.forEach(([id, key]) => {
     const el = document.getElementById(id);
+    if (!el) return;
     el.addEventListener('input', (event) => {
       targetState[key] = event.target.value;
       renderFn();
@@ -2452,49 +2461,57 @@ document.addEventListener('DOMContentLoaded', async () => {
     ['meta-filter-min-score', 'minScore'],
   ], state.metaFilters, renderMetaAds);
 
-  document.getElementById('btn-refresh').addEventListener('click', refreshDashboard);
-  document.getElementById('btn-new-offer').addEventListener('click', () => openModal());
-  document.getElementById('btn-new-meta-ad').addEventListener('click', () => openMetaModal());
-  document.getElementById('btn-open-meta-import').addEventListener('click', openMetaImportModal);
-  document.getElementById('btn-open-meta-import-inline').addEventListener('click', openMetaImportModal);
-  document.getElementById('btn-fill-meta-import-example').addEventListener('click', fillMetaImportExample);
-  document.getElementById('btn-run-meta-import').addEventListener('click', importMetaBatch);
-  document.getElementById('offers-body').addEventListener('click', handleTableClick);
-  document.getElementById('meta-ads-body').addEventListener('click', handleMetaTableClick);
+  safeOn('btn-refresh', 'click', refreshDashboard);
+  safeOn('btn-new-offer', 'click', () => openModal());
+  safeOn('btn-new-meta-ad', 'click', () => openMetaModal());
+  safeOn('btn-open-meta-import', 'click', openMetaImportModal);
+  safeOn('btn-open-meta-import-inline', 'click', openMetaImportModal);
+  safeOn('btn-fill-meta-import-example', 'click', fillMetaImportExample);
+  safeOn('btn-run-meta-import', 'click', importMetaBatch);
+  safeOn('offers-body', 'click', handleTableClick);
+  safeOn('meta-ads-body', 'click', handleMetaTableClick);
 
-  document.getElementById('drawer-backdrop').addEventListener('click', closeDrawer);
-  document.getElementById('detail-close').addEventListener('click', closeDrawer);
-  document.getElementById('meta-drawer-backdrop').addEventListener('click', closeMetaDrawer);
-  document.getElementById('meta-detail-close').addEventListener('click', closeMetaDrawer);
+  safeOn('drawer-backdrop', 'click', closeDrawer);
+  safeOn('detail-close', 'click', closeDrawer);
+  safeOn('meta-drawer-backdrop', 'click', closeMetaDrawer);
+  safeOn('meta-detail-close', 'click', closeMetaDrawer);
 
-  document.getElementById('modal-close').addEventListener('click', closeModal);
-  document.getElementById('btn-cancel-offer').addEventListener('click', closeModal);
-  document.getElementById('offer-form').addEventListener('submit', saveOffer);
-  document.getElementById('btn-delete-offer').addEventListener('click', deleteCurrentOffer);
-  document.getElementById('btn-enrich-url').addEventListener('click', enrichFromUrl);
+  safeOn('modal-close', 'click', closeModal);
+  safeOn('btn-cancel-offer', 'click', closeModal);
+  safeOn('offer-form', 'submit', saveOffer);
+  safeOn('btn-delete-offer', 'click', deleteCurrentOffer);
+  safeOn('btn-enrich-url', 'click', enrichFromUrl);
 
-  document.getElementById('meta-modal-close').addEventListener('click', closeMetaModal);
-  document.getElementById('btn-cancel-meta-ad').addEventListener('click', closeMetaModal);
-  document.getElementById('meta-form').addEventListener('submit', saveMetaAd);
-  document.getElementById('btn-delete-meta-ad').addEventListener('click', deleteCurrentMetaAd);
-  document.getElementById('btn-meta-enrich-url').addEventListener('click', enrichMetaFromUrl);
+  safeOn('meta-modal-close', 'click', closeMetaModal);
+  safeOn('btn-cancel-meta-ad', 'click', closeMetaModal);
+  safeOn('meta-form', 'submit', saveMetaAd);
+  safeOn('btn-delete-meta-ad', 'click', deleteCurrentMetaAd);
+  safeOn('btn-meta-enrich-url', 'click', enrichMetaFromUrl);
 
-  document.getElementById('meta-import-modal-close').addEventListener('click', closeMetaImportModal);
-  document.getElementById('btn-cancel-meta-import').addEventListener('click', closeMetaImportModal);
-  document.getElementById('meta-import-modal').addEventListener('click', (event) => {
+  safeOn('meta-import-modal-close', 'click', closeMetaImportModal);
+  safeOn('btn-cancel-meta-import', 'click', closeMetaImportModal);
+  safeOn('meta-import-modal', 'click', (event) => {
     if (event.target.id === 'meta-import-modal') closeMetaImportModal();
   });
 
-  scoreFields.forEach((field) => {
-    document.getElementById('offer-form').elements[`signal-${field}`].addEventListener('input', updateScorePreview);
-  });
+  const offerForm = $('offer-form');
+  if (offerForm) {
+    scoreFields.forEach((field) => {
+      const el = offerForm.elements[`signal-${field}`];
+      if (el) el.addEventListener('input', updateScorePreview);
+    });
+  }
 
-  metaScoreFields.forEach((field) => {
-    document.getElementById('meta-form').elements[`meta-signal-${field}`].addEventListener('input', updateMetaScorePreview);
-  });
+  const metaForm = $('meta-form');
+  if (metaForm) {
+    metaScoreFields.forEach((field) => {
+      const el = metaForm.elements[`meta-signal-${field}`];
+      if (el) el.addEventListener('input', updateMetaScorePreview);
+    });
+  }
 
-  document.getElementById('scaled-import-preview').textContent = SCALED_LIBRARY_IMPORT_EXAMPLE;
-  document.getElementById('scaled-import-example').textContent = SCALED_LIBRARY_IMPORT_EXAMPLE;
+  setText('scaled-import-preview', SCALED_LIBRARY_IMPORT_EXAMPLE);
+  setText('scaled-import-example', SCALED_LIBRARY_IMPORT_EXAMPLE);
   renderMetaImportStats();
   renderScaledImportStats();
   setScaledImportMessage('Cole seu JSON e rode a importação para abastecer a biblioteca independente.');
