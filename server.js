@@ -17,7 +17,11 @@ const {
 
 const app = express();
 const PORT = process.env.PORT || 3005;
-const DATA_DIR = path.join(__dirname, 'data');
+
+// In serverless (Vercel/Lambda), __dirname is read-only. Use /tmp for writable storage.
+const isServerless = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+const DATA_DIR = isServerless ? path.join('/tmp', 'data') : path.join(__dirname, 'data');
+
 const DATA_FILE = path.join(DATA_DIR, 'offers.json');
 const META_DATA_FILE = path.join(DATA_DIR, 'meta-ads-offers.json');
 const SCALED_LIBRARY_FILE = path.join(DATA_DIR, 'scaled-offers-source.json');
@@ -67,6 +71,14 @@ async function ensureCollectionFile(filePath) {
   try {
     await fs.access(filePath);
   } catch {
+    // In serverless, try to copy seed data from the bundled source
+    if (isServerless) {
+      const seedPath = path.join(__dirname, 'data', path.basename(filePath));
+      try {
+        await fs.copyFile(seedPath, filePath);
+        return;
+      } catch { /* no seed file, create empty */ }
+    }
     await fs.writeFile(filePath, '[]\n', 'utf8');
   }
 }
